@@ -1,0 +1,34 @@
+---
+title: Why detecting a bug is not the same as repairing it
+kind: System Brief
+summary: How Code Review Arena scores detection and validated repair on separate axes, and why the gap between them is the whole point.
+date: 2026-06-21
+relatedSystem: code-review-arena
+authoredByHari: false
+draft: false
+---
+
+This is a system brief derived from the Code Review Arena repository and its documentation. It explains a design decision, not a personal opinion.
+
+## The shortcut that hides failure
+
+Most evaluations of AI code review reward the comment. A reviewer that writes "this endpoint leaks data across tenants" looks correct, and on a detection-only benchmark it _is_ counted correct. But naming a defect and removing it are different acts. A confident comment with a broken fix passes the eye test and fails the system.
+
+## Two numbers, kept apart
+
+Code Review Arena reports detection and validated repair as separate axes:
+
+- **Detection** asks whether the reviewer found the seeded bug.
+- **Validated repair** asks whether the reviewer's patch actually applied, passed the required tests, and satisfied the structural validators, inside an isolated workspace.
+
+A reviewer only earns validated credit when execution backs it up. The repository's own worked example makes the separation concrete: the `keyword_gamer` control detects all ten audit-pack bugs yet validates none of its patches, while the reference patch validates all ten. Detection `1.000`, validation `0.000`. The gap is not noise, it is the measurement.
+
+## Why blind, and why adversarial
+
+The reviewer payload is deliberately blind: the diff and a bounded set of files, with no title, category, severity, ground truth, or pre-patch test output. Leaked metadata or a failing assertion would disclose the expected answer, so a model could "pass" on hints alone. The harness also treats both reviewers and benchmark packs as potentially adversarial, patches cannot touch the tests they are graded against, and every run seals a content-addressed evidence bundle so the numbers can be re-checked.
+
+## The honest caveat
+
+Passing tests is execution evidence, not proof of complete correctness, and the packs are small and curated. The point is narrower and sturdier than a leaderboard: when a fix is credited here, something actually ran and passed.
+
+See the [Code Review Arena case study](/systems/code-review-arena) for the full architecture and evidence.

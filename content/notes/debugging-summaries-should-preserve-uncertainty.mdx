@@ -1,0 +1,32 @@
+---
+title: Why debugging summaries should preserve uncertainty
+kind: System Brief
+summary: DebugBrief builds a report only from recorded evidence, exit codes, timestamps, and git snapshots, and reports correlation, never proven cause.
+date: 2026-06-17
+relatedSystem: debugbrief
+relatedPaper: self-debug
+authoredByHari: false
+draft: false
+---
+
+This is a system brief derived from the DebugBrief repository, its documentation, and its security model.
+
+## Where write-ups go wrong
+
+A debugging write-up is trusted in exactly the place it is most likely to be wrong: the conclusion. People claim a green test they never saw, or assert a root cause the evidence only hints at. The fix and the story drift apart.
+
+## Evidence in, evidence out
+
+DebugBrief records what actually happens. Each command runs under a pseudo-terminal in its own process group; the tool stores the real exit code, the duration, a bounded output preview, and a per-command git snapshot. Pass or fail comes strictly from the exit code, and a command counts as _verified_ only when a recognized runner, pytest, jest, go test, cargo test, and others, actually exits `0`.
+
+When the session ends, the report is derived from those events: the red-to-green window (the same command failing then later passing in the same directory), the reproduce and verify commands, the observed error, and the attempts that were ruled out. Empty sections are omitted. Nothing is inferred.
+
+## Correlation, stated as correlation
+
+Between a failing check and a passing one, files changed. DebugBrief lists them, and labels them correlation, not proven cause. That single word is the whole ethic: the tool will not promote a coincidence to a conclusion. It uses no AI, makes no network requests, and collects no telemetry, so there is no model quietly filling gaps with plausible text.
+
+## Honest limits
+
+Capture is explicit, so there is no full transcript, only a bounded preview. Redaction of secrets is best effort. Git sections need native git. The tool is Unix-only. None of that is hidden; it is documented, because a tool about honest reporting should be honest about itself.
+
+See the [DebugBrief case study](/systems/debugbrief) for the architecture and evidence.

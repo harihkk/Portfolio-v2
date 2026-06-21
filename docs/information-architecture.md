@@ -1,0 +1,143 @@
+# Information Architecture
+
+Purpose: the canonical route map, homepage section list, global shell, content model, and URL/navigation conventions for "The Systems Journal", the editorial engineering portfolio of Hari Kancharla (legal/SEO name: Hari Krishna Kancharla), AI Systems Engineer, Boston, MA.
+
+---
+
+## 1. Route Map
+
+The site is a Next.js 16 App Router application (React 19, TypeScript strict, Tailwind v4, GSAP). Content is verified, file-backed data (MDX/typed content modules), so the default rendering posture is **server components** with small, named **client islands** for motion and interaction (GSAP scroll reveals, count-ups, interactive system plates). Every route below is statically generatable; dynamic segments are pre-rendered from a fixed content set via `generateStaticParams`.
+
+| Route | Purpose | Key sections | Primary data source | Server / client split |
+|---|---|---|---|---|
+| `/` | Front page of the issue. Establishes the publication conceit and routes to every desk. | The 17 homepage sections in §2 (masthead, thesis, systems plate, verified metrics, index, professional record, evaluation record, research desk, flagship systems, releases/artifacts, interactive demos, milestones, build-artifact gallery, notes, open channel, colophon). | `profile`, `metrics`, `experience`, `systems`, `research`, `notes` content models (§4). | Server-rendered page; client islands for opening sequence, count-up metrics, interactive systems plate, scroll reveals. |
+| `/about` | Who Hari is and the engineering thesis, in long form. | Bio (refined from GitHub bio "i run on coffee. the code barely runs."), thesis, engineering frontiers, location (Boston, MA), how-I-work. | `profile`. | Server-rendered; minimal client (scroll reveals only). |
+| `/systems` | Index of flagship systems, the maker showcase, two-tier (flagships + archive pointer). | Four flagship cards (Code Review Arena, Helm, DebugBrief, ContamCheckr), one-liners, status, link to `/archive` for earlier work. | `systems`. | Server-rendered; client island for any hover/reveal motion. |
+| `/systems/[slug]` | Deep case study per flagship. 4 slugs: `code-review-arena`, `helm-browser-agent`, `debugbrief`, `contamcheckr`. | Problem / failure mode, thesis, how it works, execution flow, architecture, key components, technologies, tests + CI, packaging/release, limitations, related research, links (repo, live/PyPI where real). | `systems` (per-slug record from audit JSON flagships). | Server-rendered (static per slug); client islands for architecture diagram / interactive demo where present. |
+| `/experience` | Professional engineering record. | Morgan Stanley (AI Software Engineer, Boston, Nov 2024-Present); Infinite Infolab (Machine Learning Engineer, India, May 2021-Jul 2023); education (M.S. Data Analytics Engineering, ML concentration, Northeastern University, Boston, May 2025); 4+ years summary; approval-gated employer metrics (§4). | `experience`, `education`, `metrics`. | Server-rendered; client island for count-up metrics only. |
+| `/research` | Research Desk, **external** papers Hari engages with (curated influences), explicitly NOT Hari's own authored work. | Grouped reading by topic (browser/web agents, agent evaluation, code-repair evaluation, benchmark contamination, retrieval eval, reliable tool use), each tied to a connected system. | `research` (15 arXiv papers, all `verifiedViaApi: true`). | Server-rendered (static); no client interactivity required. |
+| `/research/[slug]` | Per-paper detail: paraphrased abstract, why it matters, the connected system. | Title, authors, arXiv id/link, dates, primary category, paraphrase, "why it matters", connected system. | `research` (per-paper record). | Server-rendered (static per slug). |
+| `/notes` | Engineering notes index (the op-ed/writing column). | Note list with dates and summaries. | `notes`. | Server-rendered. |
+| `/notes/[slug]` | Individual note (MDX article). | Article body, metadata, related systems. | `notes` (MDX). | Server-rendered (static per slug); client islands only for embedded interactives. |
+| `/archive` | Lower-prominence earlier work and smaller builds. | Prompt-Budd (live, https://promtbud.com/), AskRC (historical/academic, Dec 2024), GenBI (prototype, API-only), Visioncraft (historical, Feb 2025), optionally self-healing-pipeline (historical, claims stripped) and weather-dashboard (lowest/omit). | `archive`. | Server-rendered. |
+| `/contact` | Open channel / colophon, closing call to action. | Email link, GitHub link, LinkedIn (pending), masthead colophon. | `profile`. | Server-rendered; client island only if a form is added later. |
+| `/uses` *(optional, recommend deferring)* | What Hari builds with: tools, stack, hardware. | Tooling list. | (new content model, not yet populated). | Server-rendered. **Recommendation: defer until there is enough verified, non-trivial content to justify a standalone desk; an empty /uses reads as costume.** |
+
+### Route notes and approval gates
+
+- **No `/photos`, `/gallery` of personal images, `/video`, `/awards`, `/publications` (self-authored), or social-feed routes.** No photo, no video, no fake social/awards/publications. The hero is an interactive systems plate, not a portrait.
+- **LinkedIn** is referenced on `/contact` and in the footer, but the URL is **not yet known**. Needs user approval: provide the LinkedIn URL or confirm omission. Do not invent a URL.
+- **Phone number**: exists on the resume but MUST NEVER be published on any route.
+- **Build-artifact / demo media** for `/systems/[slug]`: only DebugBrief ships a repo image (`docs/demo.gif`); the other three flagship repos contain no screenshots/diagrams/logos. Any architecture diagram is authored fresh, not extracted. Could not verify any other real media assets.
+
+---
+
+## 2. Homepage Section List (17 sections → components)
+
+The front page borrows the editorial *rhythm* of a quality benchmark reference only (masthead grammar, hairline rules, dense-vs-exhale pacing, subtle count-up + scroll-reveal motion, near-monochrome palette). All copy, data, and assets are original and verified. Palette: paper `#F2EEE5`, ink `#151412`, signal `#E34A2F`. Type: Newsreader (serif), Manrope (sans), IBM Plex Mono.
+
+| # | Section | Role | Component | Data source | Render |
+|---|---|---|---|---|---|
+| 1 | Editorial masthead + nav | Nameplate establishing the conceit: "The Systems Journal" wordmark, Vol./No./Issue line, Est. + live-date stamp ("June 2026"), hairline rules, inline nav. | `Masthead`, `PrimaryNav` | `profile`, build date | Server shell; client island for live date if dynamic |
+| 2 | Engineering thesis (lead story) | Front-page lede: one original sentence stating the kind of systems Hari builds and why. Anchor on tagline "Building AI systems that have to prove they work." | `LeadStory` | `profile.tagline`, `profile.thesis` | Server |
+| 3 | Interactive systems plate (hero) | Oversized name as graphic hero plate paired with an interactive systems visualization (live diagram / data-flow canvas). **NO photo.** | `SystemsPlateHero` | `profile.name`, derived diagram data | Client island (GSAP/canvas) over server frame |
+| 4 | Verified metrics (by-the-numbers) | Scannable "box score" with count-up-on-scroll. **Every figure must be a verified engineering metric with provenance**, sourced from the resume (approved via resume) per §4; never altered. | `MetricsBoxScore` | `metrics` | Client island (count-up) |
+| 5 | Systems Journal index | Table-of-contents / thematic index segmenting the work into navigable desks. | `IssueIndex` | route registry | Server |
+| 6 | Engineering frontiers | Identity beat: the technical domains Hari pushes on (evaluation, agents, reliability, contamination). | `Frontiers` | `profile.frontiers` | Server |
+| 7 | Professional engineering record | Grid of roles communicating scope/ownership (Morgan Stanley; Infinite Infolab; Northeastern M.S.). | `ExperienceGrid` | `experience`, `education` | Server |
+| 8 | Evaluation / benchmark record | Archival "newsprint" register: results against named benchmarks/cases with provenance. Approval-gated headline numbers (§4) are surfaced only after re-derivation. | `BenchmarkRecord` | `systems` (benchmark facts) | Server |
+| 9 | Research Desk | Citations column surfacing **external** papers (curated influences), NOT Hari's own work. | `ResearchDesk` | `research` | Server |
+| 10 | Flagship systems | Maker showcase: the four deep case studies. | `FlagshipGrid` | `systems` | Server |
+| 11 | Releases / packages / CI / artifacts | Engineering social proof: published packages, release notes, CI status. Only DebugBrief is on PyPI (`debugbrief` v1.3.0). | `ReleasesStrip` | `systems` (packaging/CI) | Server |
+| 12 | Interactive demonstrations | Live playgrounds / recorded system walkthroughs as a pacing break. | `DemoBreak` | `systems` (demo media) | Client island |
+| 13 | Verified milestones | Recognition/milestone ledger with provenance (shipped-at-scale moments, releases). | `MilestonesLedger` | `metrics`, `systems` | Server |
+| 14 | Build-artifact gallery | Visual exhale: architecture diagrams / dashboards / system screenshots (authored), replacing personal photos. | `ArtifactGallery` | authored diagrams, `systems` images | Server |
+| 15 | Notes | Op-ed/writing column inviting an ongoing relationship. Newsletter is **optional**, include only with real content. | `NotesColumn` | `notes` | Server |
+| 16 | Open channel (contact) | Closing CTA: email, GitHub, LinkedIn (pending). | `OpenChannel` | `profile` | Server |
+| 17 | Colophon / footer | Back-page colophon restating the masthead conceit and credits. | `Colophon` | `profile`, build meta | Server |
+
+**Reference caution (from audit `reference.cautions`):** borrow the rhythm, never the artifacts, no copied Tailwind class strings, clamp() values, color tokens, reveal keyframes, headlines, numbers, or credentials from the reference site. The masthead conceit must be matched with real editorial substance.
+
+---
+
+## 3. Global Shell Elements
+
+These wrap every route via the App Router root layout.
+
+| Element | Behavior | Component | Notes |
+|---|---|---|---|
+| Masthead | Persistent nameplate: "The Systems Journal" wordmark, Vol./No./Issue, Est. + live month-year stamp, hairline rules. | `Masthead` | Same grammar site-wide; live date may be a small client island. |
+| Navigation | Inline/centered nav to the desks (Systems, Experience, Research, Notes, Archive, Contact; About in masthead). | `PrimaryNav` | Server-rendered links; active-state via current segment. |
+| Opening sequence | First-load editorial intro (masthead/issue reveal) on `/`, gated and reduced-motion aware. | `OpeningSequence` | Client island; must respect `prefers-reduced-motion` and never block content/SEO. |
+| Footer / colophon | Closing credits, contact links, build/issue metadata. | `Colophon` | Server. LinkedIn slot pending approval; never renders a phone number. |
+| Page transitions | Subtle "turning the page" transitions between routes; single-purpose, not gimmicky. | `PageTransition` | Client island; reduced-motion aware; must not delay navigation perceptibly. |
+| Skip link | "Skip to content" as the first focusable element for keyboard/AT users. | `SkipLink` | Server-rendered in root layout; targets the main landmark. |
+
+Accessibility baseline for the shell: one `<main>` landmark per page, visible focus states, all motion gated by `prefers-reduced-motion`, and the skip link present on every route.
+
+---
+
+## 4. Content Model Overview
+
+All content is verified and file-backed. The single source of truth is the canonical facts plus the audit JSON at `docs/audit/raw-audit-2026-06-21.json`. Each model carries **provenance** so the UI can label what is verified, approved-via-resume, or pending.
+
+| Model | Shape (key fields) | Source of truth | Provenance / gating |
+|---|---|---|---|
+| `provenance` | `status` (verified \| approved-via-resume \| needs-approval \| could-not-verify), `source`, `note` | meta-field attached to every claim/metric | Drives on-page "verified / pending" labeling. |
+| `profile` | name (masthead "Hari Kancharla"; legal/SEO "Hari Krishna Kancharla"), title ("AI Systems Engineer"), tagline ("Building AI systems that have to prove they work."), location ("Boston, Massachusetts"), bio (refined from "i run on coffee. the code barely runs."), email (`harikrishnak2426@zohomail.com`), github (`github.com/harihkk`), linkedin (**needs approval**, unknown), frontiers | canonical facts | Phone exists on resume but MUST NEVER publish. LinkedIn = needs-approval. |
+| `metrics` | label, value, unit, provenance | resume | All employer metrics are **approved-via-resume** and must never be altered: Morgan Stanley, recall@10 +42%, analyst research time -35%, p95 inference latency 3.5×, 1M+ daily inference requests, domain precision +28%, training cost -40%; Infinite Infolab, demand accuracy +27%, MAPE -22%, 10M+ records, preprocessing -55%, 50K+ daily predictions, 99.9% uptime, 2× experimentation. |
+| `experience` | org, location, role, start, end | resume | Morgan Stanley (Boston) AI Software Engineer, Nov 2024-Present. Infinite Infolab (India) Machine Learning Engineer, May 2021-Jul 2023 (resume title wins over old site's "Software Engineer, Machine Learning"). KL University and Rlogical Techsoft are **NOT** on the resume, do not publish as experience without approval. |
+| `education` | degree, concentration, school, location, date | resume | M.S. Data Analytics Engineering (concentration: Machine Learning), Northeastern University, Boston, MA, May 2025. (Northeastern confirmed via git author email.) |
+| `systems` | slug, exactName, oneLiner, problem, failureMode, thesis, howItWorks, executionFlow[], architecture[], keyComponents[], technologies[], tests, ci, packaging, limitations[], status, lastUpdate, repoUrl, liveUrl/pypiUrl, images[], claimsNeedingApproval[] | audit JSON `flagships` | Four flagships below. Repo links use the **real** repo; benchmark headline numbers are gated. |
+| `research` | slug, title, authors[], arxivId, arxivUrl, submittedDate, latestRevision, primaryCategory, abstractParaphrase, whyItMatters, connectedSystem, connectedTopic | audit JSON `research.papers` | 15 papers, all `verifiedViaApi: true`. External authorship, must never be presented as Hari's work. |
+| `notes` | slug, title, date, summary, body (MDX) | authored | No verified notes exist in the audit yet → **could not verify any existing notes**; ship `/notes` only when real content exists, or scaffold empty. |
+| `archive` | name, oneLiner, status, liveUrl, lastUpdate, label (historical/prototype) | audit JSON `earlierWork` | Prompt-Budd live (200 OK); others historical/prototype; stripped of unverified claims. Forks (langgraph, litellm, MLOps) excluded entirely. |
+
+### Flagship system records (`/systems/[slug]`)
+
+| Slug | Exact name | One-line summary | Tests | CI | Packaging | License |
+|---|---|---|---|---|---|---|
+| `code-review-arena` | Code Review Arena | Local, execution-backed benchmark that scores whether an AI code-review agent both detects a seeded PR bug and supplies a patch that applies and passes tests, detection scored separately from validation. | 306 test functions / 37 files | 5-job GitHub Actions (backend, docker, package, dashboard, windows-safety) | `codereview-arena` v0.1.0; Python 3.11+; **NOT** on any registry | MIT |
+| `helm-browser-agent` | Helm | Bounded perceive→decide→act browser runtime; completion only on visible-page evidence; Groq→Gemini→Ollama cascade; deterministic SSRF guard. | 192 test functions / 16 files (40 SSRF) | `test.yml` single smoke job (Python 3.12); no browser/network | "Helm" v0.2; **NOT** packaged (no pyproject/console_script) | MIT *(per README/author; GitHub API reported none, needs confirmation)* |
+| `debugbrief` | DebugBrief | Local-first, AI-free CLI turning a debugging session into an evidence-only Markdown brief; pass/fail strictly from real exit codes; correlation, never proven cause. | 376 test functions / 29 files | `ci.yml` matrix Linux+macOS × Python 3.9-3.14; `release.yml` to PyPI | **Published on PyPI** as `debugbrief` v1.3.0 (releases v1.1.0-v1.3.0) | MIT |
+| `contamcheckr` | ContamCheckr | Local, CPU-friendly auditor producing a caveated **evidence score** (low/moderate/high bands) for benchmark contamination, NOT a binary membership verdict. | 30 test functions / 7 files | **None** | `contamcheckr` v0.1.0; Python 3.10+; **NOT on PyPI (404 confirmed)** | MIT |
+
+### Content conflicts to surface, never silently resolve (provenance log)
+
+1. **Helm naming/repo**: old site "Surf" → use "Helm Browser Agent". Link the **real** repo `harihkk/Helm-browser-agent`; the README clone URL `Helm-agentic-browser.git` is **stale**, do not link it.
+2. **Helm license**: GitHub API reported none; README states MIT → treat as MIT per README/author, **flag for confirmation**.
+3. **Infinite Infolab title**: old site "Software Engineer, Machine Learning" vs resume "Machine Learning Engineer" → **resume wins**.
+4. **KL University (Research Assistant) / Rlogical Techsoft (Research Intern)**: on old site, **not** on resume → do not publish as professional experience without Hari's approval. KL University likely undergrad but degree/dates **unconfirmed** (could not verify).
+5. **ContamCheckr is NOT on PyPI**, only DebugBrief is. Never imply otherwise.
+6. **Old "chaos-mode" dark theme / physics-sandbox canvas**: intentionally **not** carried into v2; a physics game / dark-only hacker theme is forbidden as the primary experience.
+
+### Approval-gated claims (do not publish without re-derivation/approval)
+
+- **Code Review Arena** headline gap example (keyword_gamer detection_f_beta=1.000 vs validated_case_rate=0.000; reference-patch validates all ten), "100% mutant-kill / fully certified" for audit_v2, any real-model leaderboard numbers, pre-baked dashboard report JSONs, and "leak-free" framing → present only as "CI-enforced" or after a fresh run.
+- **Helm**: no success-rate / reliability percentages exist; the cascade resilience and SSRF guard are design intent / best-effort, not measured guarantees.
+- **DebugBrief**: test-count figures, the Python 3.9-3.14 CI claim, PyPI liveness, "no network/telemetry/AI" guarantee, and redaction effectiveness → confirm before stating as guarantees; never imply it proves root cause.
+- **ContamCheckr**: synthetic-validation numbers (tiny-gpt2 0.492 leak vs 0.008 clean), the GLUE/distilgpt2 example, and "perfectly separated" framing → present with synthetic-run caveats; never imply real-model contamination detection.
+
+---
+
+## 5. Navigation, URL, and Redirect Conventions
+
+**URL conventions**
+- Lowercase, hyphenated slugs throughout. Flagship slugs are fixed: `code-review-arena`, `helm-browser-agent`, `debugbrief`, `contamcheckr` (note: route slug differs from repo names `Helm-browser-agent` and `contamination-checker`, the route slug is canonical and stable).
+- Dynamic segments (`/systems/[slug]`, `/research/[slug]`, `/notes/[slug]`) are enumerated via `generateStaticParams` from the content models; any unlisted slug returns the App Router `not-found` (404).
+- No trailing slashes; no query-string state for navigation (filters, if added, use shallow client state, not the URL key).
+- External links (repos, PyPI, live demos) open in a new tab with `rel="noopener noreferrer"`. Link the **real** repo URLs; never the stale Helm clone URL.
+
+**Navigation conventions**
+- Primary nav exposes the desks: Systems, Experience, Research, Notes, Archive, Contact (About reachable from the masthead). The homepage index (section 5) mirrors these as an in-page table of contents.
+- Active-route state derives from the current App Router segment.
+- The skip link is the first focusable element on every page; the masthead nav follows.
+
+**Redirect conventions**
+- `/projects` → `/systems` (likely inbound/old term).
+- `/work` → `/experience`.
+- `/blog` and `/writing` → `/notes`.
+- `/cv` and `/resume` → `/experience` (no resume file or phone number is exposed).
+- Legacy earlier-work names route to `/archive` (e.g. `/surf` → `/systems/helm-browser-agent` since "Surf" was Helm's old name).
+- `/uses` → returns 404 until the page is shipped (recommend deferring); do not soft-redirect to a placeholder.
+- All redirects are `308` permanent unless a path is expected to change again. **Needs user approval:** confirm the actual set of legacy inbound paths (the prior portfolio source was empty, so old URLs **could not be verified** from source) before finalizing the redirect table.

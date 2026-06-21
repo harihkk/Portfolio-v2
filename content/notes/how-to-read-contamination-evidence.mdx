@@ -1,0 +1,34 @@
+---
+title: How to read benchmark-contamination evidence
+kind: System Brief
+summary: ContamCheckr produces a calibrated evidence score with bands and caveats, not a "contaminated / clean" label, and tells you which methods it skipped and why.
+date: 2026-06-06
+relatedSystem: contamcheckr
+relatedPaper: rephrased-contamination
+authoredByHari: false
+draft: false
+---
+
+This is a system brief derived from the ContamCheckr repository and its methods documentation.
+
+## The temptation to label
+
+It is tempting to ask a contamination tool one question: was this benchmark in the training data, yes or no? The honest answer is almost never available. A weak model can fail to reproduce text it memorized; a capable model can reproduce text it never saw. A binary label launders that uncertainty into false confidence.
+
+## Three signals, gated by capability
+
+ContamCheckr loads a local causal model, probes what it can actually do, and runs only the methods that model supports:
+
+- **Guided overlap**, ask the model to reproduce the second half of an example with and without the dataset named; the gap is the signal.
+- **Min-K%++**, a token-distribution score that becomes a calibrated index _only_ when a matched control set is supplied. Without a control, it does not contribute.
+- **Canonical-order test**, compare the published order against seeded permutations.
+
+The indices combine with fixed base weights, renormalized over whichever methods produced usable evidence, and map to **low / moderate / high** bands with a bootstrap confidence interval.
+
+## Read the caveats, and the skips
+
+Every report carries its caveats and a list of skipped methods with reasons. That list is not an apology, it is the result. Knowing the order test was skipped, or that Min-K%++ had no control, is part of interpreting the score honestly. The repository's controlled validation (a tiny model fine-tuned on a synthetic leak set) shows the separation the index is meant to surface, and is careful to say it is a controlled experiment, not a claim about any real model.
+
+The output is evidence with uncertainty attached, never proof of training-set membership.
+
+See the [ContamCheckr case study](/systems/contamcheckr) for the methods and evidence.

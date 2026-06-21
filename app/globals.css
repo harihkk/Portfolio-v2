@@ -1,0 +1,283 @@
+@import "tailwindcss";
+
+/* =========================================================================
+   THE SYSTEMS JOURNAL, editorial design system
+   Warm paper palette, editorial serif display, technical mono metadata.
+   Tokens are exposed both as raw CSS variables (:root) and as Tailwind v4
+   theme tokens (@theme) so we can use either authored CSS or utilities.
+   ========================================================================= */
+
+:root {
+  /* Paper / ink */
+  --paper: #f2eee5;
+  --paper-elevated: #faf7f0;
+  --paper-deep: #ebe5d8;
+  --ink: #151412;
+  --ink-soft: #2c2a26;
+  --ink-muted: #6a655d;
+  --rule: #b8b0a3;
+  --rule-soft: #d6cfc1;
+
+  /* Signal / state */
+  --signal: #e34a2f;
+  --signal-dark: #a82e1d;
+  --success: #2f7159;
+  --warning: #8a5616;
+
+  /* Derived surfaces */
+  --hairline: color-mix(in srgb, var(--ink) 16%, transparent);
+  --hairline-strong: color-mix(in srgb, var(--ink) 34%, transparent);
+  --signal-wash: color-mix(in srgb, var(--signal) 12%, transparent);
+  --signal-tint: color-mix(in srgb, var(--signal) 8%, var(--paper));
+
+  /* Typography */
+  --font-serif: var(--font-newsreader), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-manrope), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Layout rhythm */
+  --measure: 68ch;
+  --gutter: clamp(1.25rem, 5vw, 5rem);
+  --shell-max: 86rem;
+  --baseline: 1.6rem;
+
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-paper-elevated: var(--paper-elevated);
+  --color-paper-deep: var(--paper-deep);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-muted: var(--ink-muted);
+  --color-rule: var(--rule);
+  --color-rule-soft: var(--rule-soft);
+  --color-signal: var(--signal);
+  --color-signal-dark: var(--signal-dark);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+
+  --font-serif: var(--font-serif);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+
+  --breakpoint-xs: 26rem;
+}
+
+/* ----------------------------------------------------------------- base -- */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: clamp(1rem, 0.96rem + 0.2vw, 1.075rem);
+  line-height: 1.6;
+  font-feature-settings: "kern", "liga", "calt";
+  /* clip kills horizontal scroll without breaking position: sticky */
+  overflow-x: hidden;
+  overflow-x: clip;
+  /* subtle paper grain via layered gradients, cheap, no image weight */
+  background-image:
+    radial-gradient(
+      circle at 18% 12%,
+      color-mix(in srgb, var(--signal) 4%, transparent),
+      transparent 42%
+    ),
+    radial-gradient(
+      circle at 85% 0%,
+      color-mix(in srgb, var(--ink) 3%, transparent),
+      transparent 38%
+    );
+  background-attachment: fixed;
+}
+
+::selection {
+  background: var(--signal);
+  color: var(--paper-elevated);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  line-height: 1.04;
+  letter-spacing: -0.018em;
+  margin: 0;
+  text-wrap: balance;
+}
+
+p {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* --------------------------------------------------------------- focus -- */
+:focus-visible {
+  outline: 2.5px solid var(--signal);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+/* don't double-outline when we draw our own focus ring */
+[data-focus-ring]:focus-visible {
+  outline: none;
+}
+
+/* ------------------------------------------------------------ skip link -- */
+.skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 100;
+  transform: translateY(-160%);
+  background: var(--ink);
+  color: var(--paper-elevated);
+  padding: 0.6rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: transform 0.18s ease;
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+/* ------------------------------------------------------------- editorial -- */
+.shell {
+  width: 100%;
+  max-width: var(--shell-max);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.measure {
+  max-width: var(--measure);
+}
+
+/* monospace kicker / label */
+.kicker {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.rule {
+  border: 0;
+  border-top: 1px solid var(--hairline);
+  margin: 0;
+}
+.rule-strong {
+  border-top: 2px solid var(--ink);
+}
+
+/* a number/letter stamp used for section + project indices */
+.stamp {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+/* annotation-style link underline (microinteraction) */
+.link-annotate {
+  background-image: linear-gradient(var(--signal), var(--signal));
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  background-size: 0% 1.5px;
+  transition: background-size 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  padding-bottom: 1px;
+}
+.link-annotate:hover,
+.link-annotate:focus-visible {
+  background-size: 100% 1.5px;
+}
+
+/* fluid display type scale */
+.display-xl {
+  font-size: clamp(2.7rem, 1.6rem + 6vw, 7.5rem);
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+}
+.display-lg {
+  font-size: clamp(2rem, 1.3rem + 3.6vw, 4.4rem);
+  line-height: 0.98;
+  letter-spacing: -0.026em;
+}
+.display-md {
+  font-size: clamp(1.5rem, 1.1rem + 1.8vw, 2.7rem);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+}
+
+/* tabular numerals for metrics/timestamps */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* a soft elevated card without the rounded-glass cliché */
+.plate {
+  background: var(--paper-elevated);
+  border: 1px solid var(--hairline);
+}
+
+/* --------------------------------------------- reveal (JS-enhanced) ------ */
+/* Elements opt into reveal with data-reveal; visible by default so the page
+   is fully usable without JS. The motion provider sets [data-reveal-ready]
+   on <html> only when GSAP is active, which arms the hidden start state. */
+:root[data-reveal-ready] [data-reveal] {
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+/* ----------------------------------------------------- reduced motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  :root[data-reveal-ready] [data-reveal] {
+    opacity: 1;
+  }
+}
+
+/* utility: visually hidden but accessible */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

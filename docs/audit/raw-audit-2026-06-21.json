@@ -1,0 +1,1756 @@
+{
+  "flagships": {
+    "code-review-arena": {
+      "architecture": [
+        {
+          "component": "arena.cli",
+          "path": "arena/cli/",
+          "role": "Typer-based CLI exposing run, validate, list-cases, report, audit-report, leaderboard, serve, schema, verify-reviewer, pack-hash, lint-cases, mutation-test, certify-pack, verify-run commands (arena/cli/main.py)."
+        },
+        {
+          "component": "arena.benchmark",
+          "path": "arena/benchmark/",
+          "role": "Run orchestration (benchmark_runner.py), case/manifest loading, pack hashing, dataset validation, contamination scanning, mutation testing, certification ladder, ground-truth model."
+        },
+        {
+          "component": "arena.reviewers",
+          "path": "arena/reviewers/",
+          "role": "Reviewer implementations: deterministic controls (controls.py), reference-patch loader, shallow-patch adversarial baseline, custom-command wrapper, OpenAI-compatible HTTP reviewer, response parser, deprecated mock alias."
+        },
+        {
+          "component": "arena.execution",
+          "path": "arena/execution/",
+          "role": "Test execution backends (Docker + trusted-local), sandbox materialization, process supervision, hardening, integrity/tamper manifests, command parsing, output limits."
+        },
+        {
+          "component": "arena.patching",
+          "path": "arena/patching/",
+          "role": "Patch parsing, models, and application with integrity guards (rejects patches touching tests/config/protected paths and absolute/.. paths)."
+        },
+        {
+          "component": "arena.scoring",
+          "path": "arena/scoring/",
+          "role": "Deterministic scoring: concept (lexical) matcher, line matcher, severity matcher, false-positive penalty, fix-quality, metrics aggregation, top-level scorer."
+        },
+        {
+          "component": "arena.validators",
+          "path": "arena/validators/",
+          "role": "Structural validators: Python AST, JavaScript static, SQL static, RAG validators, source-text checks, registry."
+        },
+        {
+          "component": "arena.reports",
+          "path": "arena/reports/",
+          "role": "JSON/Markdown/HTML report writers, audit report, leaderboard, content-addressed evidence bundle, report schema."
+        },
+        {
+          "component": "arena.server",
+          "path": "arena/server/",
+          "role": "FastAPI API: background-job run execution, token auth, routes for cases/leaderboard/runs."
+        },
+        {
+          "component": "arena.storage",
+          "path": "arena/storage/",
+          "role": "SQLite repository with schema v2 (WAL, busy timeout, idempotent migrations), schema.sql."
+        },
+        {
+          "component": "dashboard",
+          "path": "dashboard/",
+          "role": "Next.js 16 / React 19 dashboard with leaderboard, reports (audit-v1/v2), cases, methodology, and docs routes."
+        },
+        {
+          "component": "benchmark_sets",
+          "path": "benchmark_sets/",
+          "role": "Three benchmark packs (v1, audit_v1, audit_v2), each 10 cases with before/after dirs, pr.diff, reference.patch, tests, case.yaml, manifest, pack.sha256."
+        }
+      ],
+      "benchmarkFacts": "Three packs, each with exactly 10 case.yaml files (verified via find): benchmark_sets/v1 (10), benchmark_sets/audit_v1 (10), benchmark_sets/audit_v2 (10) = 30 cases total. audit_v1 categories from README/manifest: Security x3 (FastAPI tenant admin bypass, SQL ownership leak, JWT audience/issuer), Distributed systems x2 (Kafka duplicate event, out-of-order event), RAG safety x2 (fabricated citation, prompt injection policy override), Concurrency x1 (async race), Reliability x1 (idempotency tenant scope), API correctness x1 (pagination cursor). audit_v2 ten logic-defect cases (rounding, rate-limit off-by-one, boolean precedence, balance comparison, divide-by-zero, page ceil, truthiness fallback, string truncation, backoff clamp, or-vs-and auth). Each pack ships a pack.sha256.",
+      "ci": {
+        "present": true,
+        "whatItRuns": "GitHub Actions .github/workflows/ci.yml with 5 jobs: (1) backend gate \u2014 ruff lint+format check, mypy, pytest, arena validate on all 3 packs, pack-hash, lint-cases --strict, reviewer-contract smoke test, reference-patch full runs on audit_v1/audit_v2, certify-pack --strict certified on all packs, keyword_gamer and shallow-patch adversarial runs, leaderboard, upload runs artifact; (2) docker \u2014 pulls python:3.12-slim, builds arena-bench image, runs tests/test_docker_execution.py with ARENA_DOCKER_TESTS=1; (3) package \u2014 builds wheel, installs in clean venv, runs arena --help/schema and checks schema.sql package-data; (4) dashboard \u2014 npm ci + npm run build; (5) windows-safety \u2014 verifies command paths fail closed on Windows and non-execution commands still work. Actions are pinned by SHA. Dependabot config present."
+      },
+      "claimsNeedingApproval": [
+        "The headline gap example: control:keyword_gamer detects all ten audit_v1 bugs (detection_f_beta=1.000) yet validates none (validated_case_rate=0.000) while reference-patch validates all ten \u2014 these specific numbers should be re-derived from a fresh run before publishing.",
+        "'100% mutant-kill rate' / 'fully certified' claims for audit_v2 cases (from CHANGELOG) \u2014 verify against an actual certify-pack run.",
+        "Any reviewer leaderboard numbers for real (non-control) models \u2014 the repo ships only deterministic controls and reference-patch; no real-model results are in the repo, so any external-model scores must be generated and approved.",
+        "The pre-baked dashboard report JSONs (dashboard/public/reports/audit-v1.json, audit-v2.json, verification.json) \u2014 confirm they reflect a current run, not stale snapshots, before showing publicly.",
+        "Claim that all packs are 'authored leak-free' / contamination-free \u2014 true that CI enforces lint-cases --strict, but state it as 'CI-enforced' rather than absolute."
+      ],
+      "evidence": [
+        {
+          "type": "test_count",
+          "detail": "306 test functions (grep -rE 'def test_' tests | wc -l) across 37 test_*.py files in tests/.",
+          "source": "tests/"
+        },
+        {
+          "type": "ci",
+          "detail": "5-job CI workflow (backend, docker, package, dashboard, windows-safety) with SHA-pinned actions and least-privilege contents:read permission.",
+          "source": ".github/workflows/ci.yml"
+        },
+        {
+          "type": "code",
+          "detail": "run_benchmark() implements the full pipeline: load_and_validate_pack -> pack_checksum/expected-digest check -> per-case materialized_case -> reviewer.review -> score_case -> _select_case_patch -> patch_applier.apply -> test_executor.execute (with hidden-test snapshot + read-only mount) -> run_validators -> score_deterministic_case -> evidence attribution -> JSON/MD/HTML reports + run_manifest.json + sealed bundle.",
+          "source": "arena/benchmark/benchmark_runner.py"
+        },
+        {
+          "type": "code",
+          "detail": "Patch integrity: protected_paths include case validation protected_paths plus tests_dir; tamper detection via before/after file_manifest on hidden tests folds test_integrity_violation into a non-validated score.",
+          "source": "arena/benchmark/benchmark_runner.py:308-374"
+        },
+        {
+          "type": "data",
+          "detail": "Each pack has exactly 10 case.yaml files (find ... case.yaml | wc -l): v1=10, audit_v1=10, audit_v2=10. Sample case (security_jwt_audience_validation_001) carries ground_truth, scoring.weights, execution.test_command, and structural_validators.",
+          "source": "benchmark_sets/*/manifest.yaml, benchmark_sets/audit_v1/security_jwt_audience_validation_001/case.yaml"
+        },
+        {
+          "type": "packaging",
+          "detail": "pyproject.toml: name 'codereview-arena' v0.1.0, requires-python >=3.11, console_script arena=arena.cli.main:app, deps fastapi/httpx/pydantic/PyYAML/rich/typer/uvicorn, dev extras pytest/mypy/ruff/hypothesis. No PyPI URL \u2014 only GitHub homepage harihkk/code-review-arena.",
+          "source": "pyproject.toml"
+        },
+        {
+          "type": "code",
+          "detail": "Dashboard is Next.js ^16.2.6 / React ^19.2.6 named codereview-arena-dashboard v0.1.0; routes include /leaderboard, /reports/audit-v1, /reports/audit-v2, /cases, /methodology, /docs.",
+          "source": "dashboard/package.json, dashboard/src/app/"
+        }
+      ],
+      "exactName": "Code Review Arena",
+      "executionFlow": [
+        "Load and validate the benchmark pack (rejects symlinks/special files, partial/tampered packs abort before any side effect)",
+        "Compute pack content checksum; if an out-of-band --expected-pack-sha256 is pinned, abort on mismatch; reserve a timestamped run directory",
+        "For each case: materialize an isolated workspace (sandbox)",
+        "Optionally run pre-patch tests/static analysis only if --allow-local-execution and reveal flags are set (blind by default)",
+        "Build the blind reviewer context (case id, stack, diff, bounded files; no title/category/severity/ground-truth/test output)",
+        "Reviewer.review(context) returns findings and an optional patch",
+        "Score detection deterministically (score_case): concept/file/line/severity matching, false-positive penalty",
+        "Select the single case-level repair patch (_select_case_patch; ambiguous if multiple competing finding patches)",
+        "Apply the patch in a copied workspace with integrity guards (no tests/config/protected/absolute/.. paths)",
+        "Copy hidden tests in, snapshot them, execute required tests via Docker or trusted-local with read-only test mount and resource limits",
+        "Run structural validators (AST/static/source-text) on the patched workspace",
+        "Score deterministically and attribute evidence: detect tampering, derive case_status, repair_confidence, execution_backend, execution_validated",
+        "Aggregate metrics; classify run_status (complete/partial/invalid/failed/legacy) and execution_backend weakest-link first",
+        "Write run.json, report.md, report.html, run_manifest.json, seal a content-addressed evidence bundle, copy latest.json, persist to SQLite"
+      ],
+      "failureMode": "Existing AI code-review benchmarks tend to credit a sharp-looking review comment as success without checking whether a proposed fix actually applies and passes tests, and reviewers can pass on leaked metadata (title/category/severity) or on pre-patch failing-test output that discloses expected values. They also rarely defend against adversarial reviewers or tampered benchmark packs.",
+      "howItWorks": "Each case is a seeded pull request (before/after code, a pr.diff, hidden tests, a reference.patch, and a case.yaml declaring ground truth, scoring weights, required tests, and structural validators). The harness sends the reviewer a blind payload (diff plus bounded files, no ground truth or descriptive metadata, no pre-patch test output), takes the returned findings and optional patch, scores detection at file granularity (with line localization reported separately) using deterministic lexical/AST heuristics, then applies the single repair patch in an isolated copied workspace, runs the required tests (Docker-isolated or trusted-local) with the hidden tests pinned read-only and tamper-detected, and runs structural validators. Detection and validation are scored separately so a correct-looking comment with a non-working fix scores high on detection but zero on validated_case_rate. Every run records a manifest (harness version, git SHA+dirty flag, pack checksum) and seals a content-addressed evidence bundle that arena verify-run can later check.",
+      "images": [],
+      "install": [
+        "python3 -m venv .venv && source .venv/bin/activate",
+        "python -m pip install -e \".[dev]\"",
+        "arena validate benchmark_sets/audit_v1",
+        "arena run benchmark_sets/audit_v1 --reviewer reference-patch --mode full --allow-local-execution",
+        "arena leaderboard runs/ --metric validated_case_rate --beta 1.0 --include-unverified",
+        "bash scripts/build_bench_image.sh  # builds arena-bench:1 Docker sandbox image (verified path)",
+        "arena serve  # local FastAPI; then cd dashboard && npm install && npm run dev (http://localhost:3000)"
+      ],
+      "keyComponents": [
+        {
+          "name": "run_benchmark / _evaluate_case",
+          "path": "arena/benchmark/benchmark_runner.py",
+          "what": "End-to-end orchestration of the diff->reviewer->patch->apply->tests->validators->score pipeline, run-status classification, budgets, manifest and evidence-bundle sealing."
+        },
+        {
+          "name": "controls.py / reference_patch.py / shallow_patch.py",
+          "path": "arena/reviewers/",
+          "what": "Deterministic control reviewers (perfect_patch, keyword_gamer, bad_patch, detects_no_patch, malformed_patch), the reference-patch loader, and the generic shallow-patch adversarial baseline."
+        },
+        {
+          "name": "custom_command.py / http.py",
+          "path": "arena/reviewers/",
+          "what": "custom-command wrapper that runs any local command over blind case JSON, and an OpenAI-compatible HTTP reviewer for local model servers (Ollama/vLLM/LM Studio/llama.cpp)."
+        },
+        {
+          "name": "deterministic_scorer.py / concept_matcher.py",
+          "path": "arena/scoring/",
+          "what": "Deterministic detection+validation scoring and lexical (keyword) concept matching (renamed from semantic_matcher; explicitly not semantic)."
+        },
+        {
+          "name": "test_executor.py / sandbox.py / hardening.py / integrity.py",
+          "path": "arena/execution/",
+          "what": "Docker and trusted-local test execution with resource limits, workspace materialization, hardened containers, and before/after tamper manifests for hidden tests."
+        },
+        {
+          "name": "patch_applier.py",
+          "path": "arena/patching/",
+          "what": "Applies the reviewer patch with integrity guards rejecting edits to tests, pytest config, protected paths, and absolute/.. diff paths."
+        },
+        {
+          "name": "validators (python_ast/javascript_static/sql_static/rag/source_text)",
+          "path": "arena/validators/",
+          "what": "Comment-stripped structural validators that check a repair structurally (e.g. JWT audience/issuer validated via AST)."
+        },
+        {
+          "name": "certify.py / mutation.py / contamination.py / pack_hash.py",
+          "path": "arena/benchmark/",
+          "what": "Certification ladder (draft/development/certified/verified), mutation kill-rate testing, ground-truth-vocabulary leak scanning, and pack content checksums."
+        },
+        {
+          "name": "bundle.py",
+          "path": "arena/reports/",
+          "what": "Content-addressed per-run evidence bundle and verify_bundle integrity check backing arena verify-run."
+        }
+      ],
+      "lastUpdate": "2026-06-21 (latest commit 656b40187cb14321c2734bbec23e44c6e47131db)",
+      "oneLiner": "A local, execution-backed benchmark harness that measures whether an AI code-review agent can both detect a seeded pull-request bug and supply a patch that actually applies and passes tests, scoring detection separately from validation.",
+      "problem": "AI code-review benchmarks often reward a sharp-looking comment without confirming that any proposed fix actually works, and reviewers can game them via leaked metadata or pre-patch test output. Code Review Arena instead applies each suggested patch in an isolated workspace, runs the required hidden tests and structural validators, and scores detection separately from validation so a plausible-looking review is never mistaken for a working repair. It runs entirely locally and is model-agnostic, treating both reviewers and benchmark packs as potentially adversarial.",
+      "packaging": {
+        "type": "python+node",
+        "name": "codereview-arena",
+        "version": "0.1.0",
+        "published": "",
+        "pythonOrNode": "Python >=3.11 (CI tests 3.12); dashboard Node 20 / Next.js 16 / React 19",
+        "keyDeps": [
+          "fastapi>=0.110",
+          "httpx>=0.27",
+          "pydantic>=2.6",
+          "PyYAML>=6.0",
+          "rich>=13.7",
+          "typer>=0.12",
+          "uvicorn[standard]>=0.29",
+          "dev: pytest/mypy/ruff/hypothesis/pytest-cov"
+        ]
+      },
+      "relatedPaperTopics": [
+        "AI code-review and code-repair evaluation (e.g. SWE-bench-style execution-backed benchmarks)",
+        "Benchmark contamination and data-leakage detection in code benchmarks",
+        "Mutation testing as a measure of test-suite strength / cheat-resistance",
+        "Adversarial / reward-hacking evaluation of LLM agents",
+        "Prompt injection and RAG safety (fabricated citations, policy override)",
+        "Reliable tool use and structured output contracts for LLM agents",
+        "Reproducible and tamper-evident ML/agent evaluation (content-addressed evidence, signed digests)",
+        "Agent evaluation and leaderboards for software-engineering tasks"
+      ],
+      "repo": "code-review-arena (GitHub: harihkk/code-review-arena)",
+      "status": "Active, pre-release (version 0.1.0, no tagged release per CHANGELOG; all changes under 'Unreleased'). Substantial and CI-gated; not published to any package registry.",
+      "technologies": [
+        "Python 3.11+",
+        "Typer (CLI)",
+        "Pydantic v2",
+        "FastAPI + Uvicorn (API server)",
+        "SQLite (storage schema v2, WAL)",
+        "PyYAML",
+        "Rich",
+        "httpx",
+        "Docker (hardened test sandbox, arena-bench image)",
+        "pytest + hypothesis (tests)",
+        "ruff + mypy (lint/typecheck)",
+        "Next.js 16 / React 19 / TypeScript / Tailwind (dashboard)",
+        "GitHub Actions (CI)"
+      ],
+      "tests": {
+        "present": true,
+        "framework": "pytest (with hypothesis property tests and pytest-cov)",
+        "count": 306,
+        "whatTheyCover": "306 test functions across 37 files: deterministic/multi-bug scoring, patching & execution, path & execution security, process supervisor/output limits, hostile-patch and integrity guards, validator hardening and negative fixtures, reviewer contract & parsers, custom-command and HTTP reviewers, certification, mutation, contamination/metrics, reproducibility/determinism, run validity, storage v2, CLI+API, jobs, evidence-attribution, bundle, and real Docker execution (gated by ARENA_DOCKER_TESTS)."
+      },
+      "thesis": "Trustworthy evaluation of AI code reviewers requires execution-backed proof of a working fix, not credit for a plausible comment \u2014 so detection and validation must be scored separately, the reviewer payload must be blind, and both reviewers and benchmark packs must be treated as adversarial with tamper-evident, reproducible runs.",
+      "limitations": [
+        "Packs are curated and small: 30 cases total across v1, audit_v1, and audit_v2 (10 each).",
+        "Concept matching is lexical (curated keywords), not semantic, so well-paraphrased findings can be under-credited (execution metrics are unaffected).",
+        "Structural validators are comment-stripped, hand-authored heuristics that may reject alternate valid repairs and do not strip string literals; tests are the real gate.",
+        "Passing tests is execution evidence, not proof of complete correctness.",
+        "This is a local audit harness, not a large-scale public ranking; the API server is explicitly not hardened for public exposure.",
+        "No real external-model results ship in the repo \u2014 only deterministic controls and the reference-patch reviewer; running a real model requires the custom-command or HTTP reviewer.",
+        "Per-bug repair attribution is suite-level for multi-bug cases (every seeded bug shares the suite's repair verdict); per-bug oracle mapping is noted as a later refinement.",
+        "No image assets exist in the repository (no screenshots/diagrams/logos)."
+      ]
+    },
+    "Debug-Brief": {
+      "repo": "/tmp/portfolio-audit/Debug-Brief (local clone; GitHub remote referenced as github.com/harihkk/Debug-Brief)",
+      "exactName": "DebugBrief",
+      "oneLiner": "A local-first, AI-free CLI that records your debugging commands, outcomes, notes, and Git changes, then generates evidence-backed Markdown reports for pull requests, handoffs, or incidents.",
+      "problem": "When developers fix a bug, the proof of what they tried, what failed, what finally passed, and which files changed lives only in scrollback and memory. Reconstructing that into a PR description, a handoff note, or an incident write-up is manual and lossy, and people routinely overstate results (claiming a test passed they never actually saw go green). DebugBrief captures the real debugging session as it happens and renders a report strictly from recorded evidence, so the write-up reflects what actually occurred. It explicitly does not use AI, infer a root cause, or report a test result you did not get (README lines 9, 65).",
+      "failureMode": "The industry gap it addresses is fabricated or unverifiable claims in engineering write-ups: PR/handoff/incident notes that assert \"tests pass\" or imply causation without proof. DebugBrief's design counter is that pass/fail comes only from a real exit code, a command counts as verified only when a recognized runner actually exits 0, and file changes between a failing and passing check are reported as correlation, never proven cause (README lines 54, 63; derive.py _detect_red_to_green and _build_one_liner).",
+      "thesis": "An honest debugging report should be derived only from recorded evidence, never inferred. DebugBrief is a dependency-light, Unix-only CLI that captures foreground commands under a pseudo-terminal and emits deterministic, evidence-only Markdown/JSON briefs with every empty section omitted and nothing invented.",
+      "howItWorks": "A session is started (or auto-started by run/note). 'debugbrief run -- <cmd>' executes the command under two pseudo-terminals (one for stdout, one for stderr) in its own process group so output streams live while a bounded head-and-tail preview is retained; terminal escape sequences and unsafe control chars are stripped from the stored copy by a streaming state machine. The runner records the real exit code, duration, timestamps, and a per-command Git snapshot (HEAD + changed files), then classifies the command via token-pattern matching (filters.py recognizes pytest, jest, vitest, go test, cargo test, etc., and build/lint/typecheck tools like mypy/ruff/tsc), unwrapping wrappers (python -m, uv/poetry run, npx, pnpm/yarn exec). Pass/fail derives strictly from exit code; compound shell commands are never attributed to a single tool unless declared with --verify and the exit code is reliable (pipefail in effect, no failure-masking operator). Secrets matching known shapes are redacted before any write. On 'end', derive.py reconstructs the red-to-green window (same command, same cwd, fail then pass), reproduce/verify commands, a one-line summary, the observed error line, and ruled-out attempts, all from events; reporters render pr/handoff/incident Markdown (and optional JSON). State is written atomically under .debugbrief/ with 0700/0600 perms and symlink/special-file refusal.",
+      "architecture": [
+        {
+          "component": "CLI (argparse)",
+          "path": "src/debugbrief/cli.py",
+          "role": "Entry point and all subcommand handlers (init/start/note/run/redo/preview/end/cancel/status/doctor/recover/last/open/list/show); console_script debugbrief=debugbrief.cli:main"
+        },
+        {
+          "component": "Command runner",
+          "path": "src/debugbrief/command_runner.py",
+          "role": "Executes commands under pseudo-terminals (pipe fallback), bounded output capture, process-group termination, timeout/interrupt/broken-pipe handling, terminal-escape sanitization"
+        },
+        {
+          "component": "Classifier/filters",
+          "path": "src/debugbrief/filters.py",
+          "role": "Token-pattern test/build/lint detection, wrapper unwrapping, shell compound/pipefail/negation reliability analysis, report dedup and noise filtering"
+        },
+        {
+          "component": "Derivations",
+          "path": "src/debugbrief/derive.py",
+          "role": "Evidence-only derivation: red-to-green window, reproduce/verify commands, one-liner, observed error, ruled-out attempts, next-step note extraction"
+        },
+        {
+          "component": "Reporters",
+          "path": "src/debugbrief/reporters/",
+          "role": "Mode-specific Markdown rendering (pr.py, handoff.py, incident.py) plus base.py context builder and JSON renderer in __init__.py"
+        },
+        {
+          "component": "Session manager",
+          "path": "src/debugbrief/session_manager.py",
+          "role": "Session lifecycle, atomic writes, active-session pointer, command lease, recovery/status"
+        },
+        {
+          "component": "Models",
+          "path": "src/debugbrief/models.py",
+          "role": "Dataclasses for Session, Event, CommandData, CommandClassification and status constants"
+        },
+        {
+          "component": "Paths/safety",
+          "path": "src/debugbrief/paths.py",
+          "role": "Project-root resolution, .debugbrief/ layout, symlink/special-file refusal, local-ignore via .git/info/exclude"
+        },
+        {
+          "component": "Redaction",
+          "path": "src/debugbrief/redaction.py",
+          "role": "Best-effort regex secret scrubbing (PEM keys, provider keys, bearer/auth, connection strings, sensitive name=value)"
+        },
+        {
+          "component": "Git utils",
+          "path": "src/debugbrief/git_utils.py",
+          "role": "Native-git repo metadata, changed files, and tracked-state check (fails closed) used to refuse redo on repository-supplied state"
+        },
+        {
+          "component": "Config",
+          "path": "src/debugbrief/config.py",
+          "role": "Optional .debugbrief.toml defaults (default_mode, timeout_seconds, detail) via tomllib/tomli"
+        },
+        {
+          "component": "Doctor",
+          "path": "src/debugbrief/doctor.py",
+          "role": "Read-only PASS/WARN/FAIL health check with safe --fix"
+        }
+      ],
+      "executionFlow": [
+        "start (or auto-start on run/note): create session, record initial Git state, locally ignore .debugbrief/ via .git/info/exclude",
+        "run -- <cmd>: acquire command lease, execute under pseudo-terminal in its own process group, stream live output",
+        "capture: real exit code, start/end timestamps, duration, bounded stdout/stderr previews, per-command Git snapshot (HEAD + changed files)",
+        "classify: token-pattern match test/build/lint runner (unwrap wrappers); compound shell handled via reliability rules; pass/fail strictly from exit code",
+        "redact: scrub secret-like values from command text and previews, then persist event atomically",
+        "redo: re-run last captured command in same cwd/shell mode; refuse if session file is Git-tracked (fail closed) or contains a redaction placeholder",
+        "end: capture final Git state; derive red-to-green window, reproduce/verify commands, one-liner, observed error, ruled-out attempts from events",
+        "render: emit pr/handoff/incident Markdown (and optional JSON), omitting every empty section; optionally print to stdout for piping to gh pr comment"
+      ],
+      "keyComponents": [
+        {
+          "name": "run_command",
+          "path": "src/debugbrief/command_runner.py",
+          "what": "Core capture: pty allocation with pipe fallback, _drive() reader threads, bounded buffer, timeout/interrupt/broken-pipe outcomes, escape-sequence stripping"
+        },
+        {
+          "name": "classify_command",
+          "path": "src/debugbrief/filters.py",
+          "what": "Deterministic test/build/lint classification anchored to the effective executable; verification true only on real exit 0"
+        },
+        {
+          "name": "derive",
+          "path": "src/debugbrief/derive.py",
+          "what": "Builds the Derivation object (one_liner, reproduce/verify, red_to_green, observed_error, ruled_out) from recorded events only"
+        },
+        {
+          "name": "_detect_red_to_green",
+          "path": "src/debugbrief/derive.py",
+          "what": "Finds first failing check then the same command (same cwd) passing later; correlates file changes across the window inside a repo"
+        },
+        {
+          "name": "render_report / render_report_json",
+          "path": "src/debugbrief/reporters/__init__.py",
+          "what": "Dispatches to PR/handoff/incident reporters and emits a JSON form mirroring the same evidence-only fields"
+        },
+        {
+          "name": "redact_text",
+          "path": "src/debugbrief/redaction.py",
+          "what": "Best-effort secret scrubber applied at capture time before any disk write"
+        },
+        {
+          "name": "tracked_state",
+          "path": "src/debugbrief/git_utils.py",
+          "what": "Fail-closed check that refuses redo when a session file may be repository-supplied (TRACKED/UNKNOWN)"
+        }
+      ],
+      "tests": {
+        "present": true,
+        "framework": "pytest",
+        "count": 376,
+        "whatTheyCover": "376 test functions (grep -rhE 'def test_') across 29 test files plus conftest.py and 6 committed snapshot reports. Coverage spans command runner robustness (35 in test_runner_robustness.py, 19 in test_command_runner.py), state integrity (34), filters/classification (29), redaction (17), command lease (23), session lifecycle (14), reporters/derive/snapshots, doctor, git utils, CLI ergonomics, e2e CLI, JSON report, markdown safety, state dir/file safety, and a CI-workflow sanity check (test_ci_workflow.py)."
+      },
+      "ci": {
+        "present": true,
+        "whatItRuns": "Two GitHub Actions workflows. ci.yml (push to main, all PRs): a lint job (ruff check + mypy on Python 3.12) and a test matrix across ubuntu-latest and macos-latest x Python 3.9/3.10/3.11/3.12/3.13/3.14 that runs pytest -q, builds sdist+wheel, installs the wheel into a clean venv with pip check, asserts package/metadata/pyproject versions agree, and runs CLI smoke checks (init/start/note/run/redo/preview/end/last/list, broken-pipe promptness, cancel). No Windows runner by design. release.yml (on published GitHub Release): verifies the release tag matches the pyproject version, builds, twine check, and publishes to PyPI via pypa/gh-action-pypi-publish with skip-existing."
+      },
+      "packaging": {
+        "type": "python",
+        "name": "debugbrief",
+        "version": "1.3.0",
+        "published": "https://pypi.org/project/debugbrief/",
+        "pythonOrNode": "Python >=3.9 (classifiers list 3.9 through 3.14)",
+        "keyDeps": [
+          "tomli>=2.0.1 (conditional, only on Python < 3.11)",
+          "dev extras: pytest>=7.0, ruff>=0.6, mypy>=1.8, build>=1.0",
+          "release extras: build>=1.0, twine>=5.0"
+        ]
+      },
+      "install": [
+        "pipx install debugbrief",
+        "uv tool install debugbrief",
+        "pip install debugbrief",
+        "pip install -e \".[dev]\" (development)",
+        "pytest (run tests)"
+      ],
+      "technologies": [
+        "Python (stdlib-only runtime, >=3.9)",
+        "argparse CLI",
+        "POSIX pseudo-terminals (pty), process groups, signals, select",
+        "subprocess",
+        "native git (shelled out)",
+        "tomllib / tomli (config)",
+        "setuptools (build backend)",
+        "pytest",
+        "ruff",
+        "mypy",
+        "GitHub Actions",
+        "PyPI / twine"
+      ],
+      "limitations": [
+        "Capture is explicit through 'debugbrief run'; output streams live but only a bounded preview is stored, so there is no full transcript (README lines 115)",
+        "Full-screen TUIs (vim, htop) are not meaningfully captured; run them directly and record the outcome with note (README line 116)",
+        "Redaction is conservative and best effort; it does not catch every secret (known misses: space-separated flag values like --token abc, and secrets in backslash-escaped string literals) (README line 117; SECURITY.md)",
+        "Git sections require native git; outside a repository they are omitted (README line 118)",
+        "Unix-only: Linux and macOS tested in CI; native Windows and PowerShell are not supported (README line 111)",
+        "Compound shell commands cannot be attributed to a single tool's pass/fail unless declared with --verify under a reliable exit code (docs/COMMANDS.md; filters.py)",
+        "'start --shell' shell-history capture is intentionally not implemented in v1 (docs/COMMANDS.md Experimental shell mode)",
+        "Does not defend against a local attacker with write access to .debugbrief/ or who can modify the commands you run (SECURITY.md)"
+      ],
+      "evidence": [
+        {
+          "type": "test_count",
+          "detail": "376 test functions via grep -rhE 'def test_' tests | wc -l, across 29 test_*.py files; largest are test_runner_robustness.py (35), test_state_integrity.py (34), test_filters.py (29)",
+          "source": "tests/ (grep/find)"
+        },
+        {
+          "type": "version",
+          "detail": "version = \"1.3.0\" in pyproject.toml matches __version__ = \"1.3.0\" in src/debugbrief/__init__.py; CI asserts package/metadata/pyproject agree",
+          "source": "pyproject.toml line 8; src/debugbrief/__init__.py; .github/workflows/ci.yml"
+        },
+        {
+          "type": "console_script",
+          "detail": "[project.scripts] debugbrief = \"debugbrief.cli:main\"",
+          "source": "pyproject.toml line 66"
+        },
+        {
+          "type": "runtime_deps",
+          "detail": "Single conditional runtime dependency tomli>=2.0.1 only on python_version < '3.11'; otherwise stdlib-only",
+          "source": "pyproject.toml lines 46-48"
+        },
+        {
+          "type": "pipeline_code",
+          "detail": "_detect_red_to_green requires the SAME command and SAME invocation_cwd, fail then pass, and only reports changed files inside a repo as correlation",
+          "source": "src/debugbrief/derive.py lines 154-202"
+        },
+        {
+          "type": "honesty_rule",
+          "detail": "is_verification is True only when a recognized check actually exited 0 (passed); compound shells not attributed to a tool unless --verify with reliable exit code",
+          "source": "src/debugbrief/filters.py classify_command / _classify_shell_command"
+        },
+        {
+          "type": "security",
+          "detail": "Symlink/special-file refusal via lstat/O_NOFOLLOW/fstat, 0700/0600 perms, atomic write+rename, redo fails closed on tracked/unknown Git state",
+          "source": "SECURITY.md; src/debugbrief/git_utils.py tracked_state; src/debugbrief/cli.py cmd_redo"
+        },
+        {
+          "type": "ci_matrix",
+          "detail": "Test matrix ubuntu-latest+macos-latest x Python 3.9-3.14; no windows-latest; wheel install + pip check + version agreement + CLI smoke",
+          "source": ".github/workflows/ci.yml lines 25-123"
+        },
+        {
+          "type": "images",
+          "detail": "Only one image asset in the repo: docs/demo.gif (terminal demo). No PNG/JPG/SVG/WEBP present.",
+          "source": "find . -type f -iname '*.gif' etc."
+        }
+      ],
+      "images": [
+        {
+          "path": "docs/demo.gif",
+          "kind": "gif"
+        }
+      ],
+      "status": "Active and published. Version 1.3.0 released 2026-06-17 (CHANGELOG) with an [Unreleased] section already accruing fixes; clone HEAD commit dated 2026-06-21. Published on PyPI; CI and release automation in place.",
+      "lastUpdate": "Latest commit d5c1df6 dated 2026-06-21 (git log). CHANGELOG: 1.3.0 released 2026-06-17, plus an [Unreleased] section.",
+      "relatedPaperTopics": [
+        "code-repair / automated program-repair evaluation",
+        "reliable tool use and exit-code-grounded verification in agents",
+        "debugging and observability tooling",
+        "provenance and reproducibility of engineering claims (red-to-green evidence)",
+        "secret detection / redaction accuracy and false-negative rates",
+        "benchmark and result contamination / fabricated-results detection",
+        "agent evaluation and honest self-reporting",
+        "terminal/PTY capture and ANSI escape sanitization"
+      ],
+      "benchmarkFacts": "",
+      "claimsNeedingApproval": [
+        "Any specific test-count figure shown publicly (376 test functions across 29 files) should be confirmed with Hari, as it shifts as the suite changes",
+        "The 'tested on Python 3.9 through 3.14, Linux and macOS' claim reflects the CI matrix config, not observed green runs in this clone \u2014 verify CI is actually passing before presenting it as proof",
+        "PyPI publication / download or adoption numbers: the homepage URL pypi.org/project/debugbrief/ is referenced in README/pyproject, but this audit did not access PyPI; confirm the package is live and at 1.3.0 before stating it publicly",
+        "Any phrasing implying DebugBrief 'proves' root cause \u2014 the tool explicitly reports correlation, not cause; public copy must not overstate this",
+        "'Makes no network requests / no telemetry / no AI' is a strong security claim from SECURITY.md/README; confirm before publishing as a guarantee",
+        "Redaction effectiveness should never be presented as a guarantee; it is best-effort with documented known misses"
+      ]
+    },
+    "Helm-browser-agent": {
+      "architecture": [
+        {
+          "component": "FastAPI app + WebSocket/REST surface",
+          "path": "api/main.py",
+          "role": "Serves the SPA, exposes /ws/advanced streaming endpoint and REST routes for tasks, templates, workflows, scheduler, recordings, extraction; wires together all core engines (754 lines)"
+        },
+        {
+          "component": "Prompt normalizer (pipeline stage 1)",
+          "path": "core/prompt_normalizer.py",
+          "role": "Deterministic, model-free cleanup of messy prompts (high-confidence typo fixes, whitespace, filler stripping for queries only) plus structural signals (URLs, quoted content, verbs)"
+        },
+        {
+          "component": "Intent planner",
+          "path": "core/intent_planner.py",
+          "role": "Builds the structured BrowserIntent (command vs content, target site/url, query, success condition, risk, validation) and deterministically routes high-confidence intents to registered actions before any LLM step (1617 lines)"
+        },
+        {
+          "component": "Action registry",
+          "path": "core/action_registry.py",
+          "role": "Single source of truth for the actions the engine can run; distinguishes executable actions from non-executable planner concepts, validates required params, resolves aliases, and audits for alias collisions at import time"
+        },
+        {
+          "component": "Risk & confirmation layer",
+          "path": "core/risk.py",
+          "role": "Classifies high-impact intents (buy/checkout/send/submit/delete/post/commit/account changes) and gates them behind explicit confirmation; read-only families never trip on content words"
+        },
+        {
+          "component": "Validators",
+          "path": "core/validators.py",
+          "role": "Composable, evidence-based completion validators (validate_url, validate_domain, validate_text_visible, validate_search_results_visible, etc.) that gate the 'completed' state from visible page evidence"
+        },
+        {
+          "component": "Blockers",
+          "path": "core/blockers.py",
+          "role": "Structured blocker schema and classifier (login_required, captcha_or_bot_protection, page_not_found, no_results, confirmation_required, ...) plus suggested next steps; terminal statuses blocked/failed/unverified"
+        },
+        {
+          "component": "Task orchestrator",
+          "path": "core/task_orchestrator.py",
+          "role": "The agentic plan-execute-observe-validate loop; loop detection, recovery, run lock serializing the shared browser, TaskStatus enum incl. UNVERIFIED/BLOCKED (826 lines)"
+        },
+        {
+          "component": "AI agent / provider cascade",
+          "path": "core/ai_agent.py",
+          "role": "GroqAIAgent: provider cascade Groq -> Gemini -> local Ollama with daily-quota short-circuit, robust JSON parsing, static cacheable system prompt (989 lines)"
+        },
+        {
+          "component": "Browser engine",
+          "path": "core/browser_engine.py",
+          "role": "Playwright wrapper; Chromium launch + CDP switching to Brave/Chrome/Vivaldi/Edge, PageState observation, execute_action dispatch, higher-level workflow actions, auto-restart watchdog (1639 lines)"
+        },
+        {
+          "component": "Session recorder",
+          "path": "core/session_recorder.py",
+          "role": "Exports a run to runnable Playwright Python and JSON"
+        },
+        {
+          "component": "Data extractor",
+          "path": "core/data_extractor.py",
+          "role": "Structured CSV / JSON / Markdown export of extracted data"
+        },
+        {
+          "component": "Task templates",
+          "path": "core/task_templates.py",
+          "role": "Parameterized preset tasks with variable substitution"
+        },
+        {
+          "component": "Workflow engine",
+          "path": "core/workflow_engine.py",
+          "role": "Chained multi-step tasks with conditional branching"
+        },
+        {
+          "component": "Scheduler",
+          "path": "core/scheduler.py",
+          "role": "Cron-style recurring tasks that survive restarts"
+        },
+        {
+          "component": "Database",
+          "path": "database/db.py",
+          "role": "Async SQLite (aiosqlite) persistence for tasks, task_steps, recordings, task_templates, workflows, scheduled_tasks; seeds built-in templates (377 lines)"
+        },
+        {
+          "component": "Frontend SPA",
+          "path": "frontend/index.html",
+          "role": "Single-page UI: live preview, history, analytics, renders validation evidence and structured blockers, voice input, dark mode"
+        },
+        {
+          "component": "Entry point",
+          "path": "run.py",
+          "role": "Pre-flight checks (Python version, provider config, Playwright Chromium install), then launches uvicorn on api.main:app"
+        }
+      ],
+      "benchmarkFacts": "",
+      "ci": {
+        "present": true,
+        "whatItRuns": ".github/workflows/test.yml ('tests' workflow) on push/PR to main: checkout, setup-python 3.12 with pip cache, pip install -r requirements.txt, a syntax/AST parse check across all non-venv .py files, then 'python -m unittest discover -s tests/unit -p test_*.py -v'. Single job named 'smoke' on ubuntu-latest. No Playwright browser install and no live/network tests run in CI."
+      },
+      "claimsNeedingApproval": [
+        "Any reliability/accuracy or success-rate percentages for live web tasks \u2014 none are measured in the repo; do not state a success rate.",
+        "The claim that the provider cascade 'keeps working when free-tier quotas run out' is a design intent in code, not a measured uptime figure.",
+        "Number/breadth of websites the agent works on (Amazon, YouTube, GitHub, Google Keep workflows exist as actions but real-world success rates are not benchmarked).",
+        "Any framing of the SSRF/prompt-injection guard as a security guarantee \u2014 it is a deterministic best-effort filter; the code itself notes DNS-rebinding limits without a resolver.",
+        "Stating a specific test count publicly \u2014 confirm whether to cite 192 test functions or the 16 test files; both are real but the 'broad suite' framing should be Hari-approved."
+      ],
+      "evidence": [
+        {
+          "type": "test_count",
+          "detail": "192 test functions total via 'grep -rE \"def test_\" tests/ | wc -l'. Per-file: test_smoke 53, test_url_policy 40, test_risk_confirmation 12, test_validators 12, test_command_content_separation 10, test_executor 10, test_prompt_normalizer 10, test_blockers 8, test_fuzz_paraphrase 7, test_normalizer_inference 7, test_ai_agent_fixes 5, test_inferred_routing 5, test_safety_fixes 5, test_planner_contract 4, test_e2e_websocket 4. (tests/unit/fakes.py has 0.)",
+          "source": "tests/unit/*.py via grep"
+        },
+        {
+          "type": "source_size",
+          "detail": "core/ totals ~8138 lines across modules; largest: browser_engine.py 1639, intent_planner.py 1617, ai_agent.py 989, task_orchestrator.py 826, api/main.py 754, database/db.py 377.",
+          "source": "wc -l on core/*.py api/*.py database/*.py"
+        },
+        {
+          "type": "provider_cascade",
+          "detail": "GroqAIAgent.__init__ default model 'llama-3.3-70b-versatile', gemini_model 'gemini-2.0-flash', plus Ollama url/model; comment 'Provider cascade: Groq -> Gemini -> Ollama (local)'. No vendorA/openai/modelB references anywhere in *.py.",
+          "source": "core/ai_agent.py lines 171-218; grep for vendorA|openai|modelB returned nothing"
+        },
+        {
+          "type": "pipeline_wiring",
+          "detail": "task_orchestrator imports blockers, validators, risk; loop references _detect_loop, risk_layer.action_requires_confirmation, confirmation_blocker, browser.execute_action, validators_mod.validate_completion, _classify_blocker \u2014 confirming the README pipeline stages exist in code.",
+          "source": "core/task_orchestrator.py grep"
+        },
+        {
+          "type": "ssrf_guard",
+          "detail": "core/url_policy.py: ALLOWED_SCHEMES = {http,https}; blocks loopback/private/link-local/reserved IPs, cloud metadata (169.254.169.254, fd00:ec2::254, metadata.google.internal), and integer/hex-packed IPv4 bypasses; opt-in via HELM_ALLOW_PRIVATE_HOSTS plus allow/deny suffix lists. 40 tests in test_url_policy.py.",
+          "source": "core/url_policy.py lines 1-60; tests/unit/test_url_policy.py"
+        },
+        {
+          "type": "e2e_offline",
+          "detail": "tests/unit/test_e2e_websocket.py drives api.main.websocket_endpoint directly with FakeWebSocket + FakeBrowser + ScriptedAI (tests/unit/fakes.py) through the real orchestrator/validator/blocker/risk pipeline; no real browser/network/AI key.",
+          "source": "tests/unit/test_e2e_websocket.py, tests/unit/fakes.py"
+        },
+        {
+          "type": "persistence",
+          "detail": "database/db.py creates tables tasks, task_steps, task_templates, recordings, workflows, scheduled_tasks with indexes on tasks(status) and tasks(created_at); seeds built-in templates.",
+          "source": "database/db.py grep CREATE TABLE"
+        },
+        {
+          "type": "not_published",
+          "detail": "No pyproject.toml, setup.py, or setup.cfg present; dependencies pinned only in requirements.txt. No console_scripts entry point \u2014 launched via 'python run.py' / Makefile 'make run'. Not a packaged/distributed PyPI artifact (the debugbrief PyPI homepage in the prompt is unrelated to this Helm repo).",
+          "source": "ls pyproject.toml/setup.py (none); requirements.txt; Makefile; run.py"
+        }
+      ],
+      "executionFlow": [
+        "Raw natural-language prompt arrives over the /ws/advanced WebSocket (api/main.py)",
+        "Normalize: prompt_normalizer fixes high-confidence typos, collapses whitespace, extracts structural signals (URLs, quoted content) \u2014 deterministic, no model call",
+        "Structured intent: intent_planner separates command vs content and builds BrowserIntent (target site/url, query, content, constraints, success condition, risk level, validation strategy)",
+        "Risk check: risk.py classifies the intent; high-impact actions (cart/checkout/send/submit/delete/post/commit/account changes) are gated behind a confirmation blocker unless options.confirmed",
+        "Plan one action: deterministic IntentPlanner routes high-confidence intents directly; otherwise ai_agent (Groq->Gemini->Ollama cascade) picks the single next action from intent + current page",
+        "Registry validation: action_registry validates the chosen action against known executable actions and required params (rejects non-executable planner concepts and unknown actions)",
+        "Execute: browser_engine.execute_action runs the action via Playwright, then observes the new PageState",
+        "Adaptive loop: task_orchestrator detects loops/idle patterns and attempts recovery, feeding last-failure feedback into the next step (max_steps cap)",
+        "Validate completion: validators gate the terminal state \u2014 'completed' only with visible page evidence, else 'unverified', or a structured 'blocked' with a typed blocker and suggested next step",
+        "Persist + stream: results, steps, validation evidence and blockers are persisted to SQLite and streamed back to the frontend"
+      ],
+      "failureMode": "Browser agents commonly fake success \u2014 they type the raw instruction into a search box, mark a task 'done' just because a page loaded, or hallucinate actions the underlying engine cannot execute. They also collapse when a single LLM provider's free-tier quota runs out, and they will navigate to whatever URL an LLM emits (an injection / SSRF risk) since URL choices are influenced by untrusted page text.",
+      "howItWorks": "Every task runs through one fixed pipeline rather than a raw prompt to the browser. A deterministic normalizer cleans the prompt; an intent planner produces a structured intent that separates command words from the content to act on and declares an explicit success condition. A risk layer pauses high-impact actions for confirmation. A deterministic planner handles high-confidence routes (direct URLs, site searches, common destinations); only when no high-confidence route applies does the LLM choose the single next action. Every action is validated against a central action registry (the engine can only run known actions), executed via Playwright, and the resulting page is observed. A loop detector triggers recovery. Completion is gated by evidence-based validators: a run is only 'completed' when a validator can prove the outcome from the visible page, otherwise it ends 'unverified' or 'blocked' with a structured, typed blocker. The LLM provider is a cascade (Groq -> Gemini -> local Ollama) with daily-quota short-circuiting so it keeps working when a free tier is exhausted. A deterministic SSRF guard checks every URL before navigation.",
+      "images": [],
+      "install": [
+        "git clone https://github.com/harihkk/Helm-agentic-browser.git",
+        "cd Helm-agentic-browser",
+        "cp .env.example .env  # add Groq, Gemini, or Ollama settings",
+        "make dev   # creates venv, installs deps, installs Playwright Chromium",
+        "make run   # starts server on http://localhost:8000",
+        "# Alternatively: python run.py",
+        "make test  # python -m unittest discover -s tests/unit -p 'test_*.py'",
+        "make lint  # AST syntax check across the codebase"
+      ],
+      "keyComponents": [
+        {
+          "name": "PromptNormalizer",
+          "path": "core/prompt_normalizer.py",
+          "what": "Deterministic stage-1 cleanup + structural signals; conservative so verbatim content (note bodies, queries) is never mangled"
+        },
+        {
+          "name": "IntentPlanner / BrowserIntent",
+          "path": "core/intent_planner.py",
+          "what": "Structured intent with command/content separation and deterministic high-confidence routing before the LLM loop"
+        },
+        {
+          "name": "ACTION_SPECS registry",
+          "path": "core/action_registry.py",
+          "what": "Whitelist of executable actions vs non-executable planner concepts; import-time alias-collision audit"
+        },
+        {
+          "name": "Risk/confirmation gate",
+          "path": "core/risk.py",
+          "what": "Pattern + family + action based classification of high-impact intents requiring confirmation"
+        },
+        {
+          "name": "validate_completion + VALIDATORS",
+          "path": "core/validators.py",
+          "what": "Evidence-based validators that gate the completed state from visible page evidence"
+        },
+        {
+          "name": "Blocker schema + classify_blocker",
+          "path": "core/blockers.py",
+          "what": "~20 typed blocker categories with suggested next steps; terminal statuses blocked/failed/unverified"
+        },
+        {
+          "name": "SophisticatedTaskOrchestrator",
+          "path": "core/task_orchestrator.py",
+          "what": "plan-execute-observe-validate loop with loop detection, recovery, and a shared-browser run lock"
+        },
+        {
+          "name": "GroqAIAgent",
+          "path": "core/ai_agent.py",
+          "what": "Provider cascade Groq->Gemini->Ollama with daily-quota short-circuit and robust JSON parsing"
+        },
+        {
+          "name": "AdvancedBrowserEngine",
+          "path": "core/browser_engine.py",
+          "what": "Playwright wrapper with CDP browser switching, page-state observation, and auto-restart watchdog"
+        },
+        {
+          "name": "url_policy SSRF guard",
+          "path": "core/url_policy.py",
+          "what": "Single deterministic gate every navigation passes; blocks non-http(s), private/loopback/metadata, packed-IP bypasses"
+        }
+      ],
+      "lastUpdate": "2026-06-09 (latest commit 784af0a7998b90898a7d4bd4d11ee0ac62ace3db); README header says HELM v0.2; last tagged release in CHANGELOG is [0.1.0] 2026-04-22 with an [Unreleased] section.",
+      "limitations": [
+        "No hosted version \u2014 runs only locally on the user's machine (README Quick start).",
+        "Requires at least one configured AI provider (Groq, Gemini, or Ollama); free-tier quotas can be exhausted, mitigated only by falling back down the cascade.",
+        "SSRF guard validates only the literal host unless a DNS resolver is supplied \u2014 a host that passes can still resolve to a private address at connect time (DNS-rebinding window, documented in core/url_policy.py).",
+        "CI runs offline unit/integration/E2E tests only; it does not install Playwright browsers or exercise a real browser, network, or live websites.",
+        "'unverified' is a real terminal state \u2014 the agent honestly cannot always prove completion, so some runs end without confirmation rather than success.",
+        "Not packaged/published (no pyproject/setup.py, no console_script, not on PyPI); install is git-clone + make.",
+        "Real-world task success rates on live sites are not measured anywhere in the repo.",
+        "Python 3.8+ is the floor checked in run.py, but CI only tests on 3.12."
+      ],
+      "oneLiner": "Drive a real browser with plain English: Helm turns an instruction into a structured intent, plans one safe action at a time, and only reports a task done when a validator can prove it from the visible page.",
+      "packaging": {
+        "type": "application",
+        "name": "Helm",
+        "version": "0.2 (README header 'HELM v0.2'; CHANGELOG last tagged 0.1.0, plus an Unreleased section)",
+        "published": "",
+        "pythonOrNode": "Python (3.8+ checked at runtime in run.py; CI on 3.12)",
+        "keyDeps": [
+          "fastapi==0.104.1",
+          "uvicorn==0.24.0",
+          "playwright>=1.40.0",
+          "groq>=0.4.2",
+          "beautifulsoup4==4.12.2",
+          "pydantic>=2.5.0",
+          "websockets==12.0",
+          "aiosqlite>=0.19.0",
+          "httpx>=0.25.0",
+          "python-dotenv==1.0.0"
+        ]
+      },
+      "problem": "Most natural-language browser agents are unreliable in ways that matter: they paste the raw instruction into a search box, declare success just because a page rendered, or emit actions the underlying engine cannot run. They also depend on a single LLM provider whose free-tier quota runs out, and they will navigate to whatever URL the model picks \u2014 including private or cloud-metadata addresses influenced by untrusted page text. Helm addresses this by forcing every task through a fixed, auditable pipeline (normalize, structured intent, risk gate, registry-validated action, observe, evidence-based validation) instead of a raw prompt-to-browser loop. The goal is honest outcomes: completed only with proof, otherwise unverified or a precise structured blocker.",
+      "relatedPaperTopics": [
+        "LLM-driven browser / web agents (WebArena, Mind2Web, WebVoyager)",
+        "Agent evaluation and verifiable task completion",
+        "Prompt injection and indirect injection via untrusted web content",
+        "SSRF defenses and URL safety for autonomous agents",
+        "Reliable tool use and constrained action spaces / action grounding",
+        "Multi-provider LLM fallback and rate-limit/quota resilience",
+        "Self-healing selectors and recovery in UI automation",
+        "Observability and structured failure taxonomies for agent runs"
+      ],
+      "repo": "/tmp/portfolio-audit/Helm-browser-agent (GitHub: harihkk/Helm-agentic-browser)",
+      "status": "Working, actively-developed local application (v0.2). First working release 0.1.0 (2026-04-22); substantial Unreleased work adds the structured intent/validator/blocker/risk pipeline. Offline test suite is broad and CI is green-gating, but the project is not packaged or hosted.",
+      "technologies": [
+        "Python",
+        "FastAPI",
+        "Uvicorn",
+        "WebSockets",
+        "Playwright (Chromium, CDP browser switching)",
+        "Groq (llama-3.3-70b-versatile)",
+        "Google Gemini (gemini-2.0-flash)",
+        "Ollama (local LLM)",
+        "Pydantic",
+        "BeautifulSoup4",
+        "aiosqlite / SQLite",
+        "httpx",
+        "GitHub Actions",
+        "unittest"
+      ],
+      "tests": {
+        "present": true,
+        "framework": "unittest (stdlib); offline test doubles in tests/unit/fakes.py; tests/live_check.py for live HTTP+WebSocket against a running server",
+        "count": 192,
+        "whatTheyCover": "192 test functions across 16 files: prompt normalization (10) + inference (7), command/content separation (10), intent/planner contract (4) and inferred routing (5), fuzz/paraphrase stability (7), action executor (10), validators (12), blockers (8), risk/confirmation (12), URL/SSRF policy (40), ai_agent fixes (5), safety fixes (5), end-to-end WebSocket through the real pipeline with fakes (4), and a smoke suite (53). fakes.py defines FakeBrowser/ScriptedAI and contributes 0 test functions."
+      },
+      "exactName": "Helm",
+      "thesis": "A browser agent earns trust by being auditable and honest: route every instruction through a fixed, testable pipeline, let the engine execute only whitelisted actions, gate completion on visible-page evidence, and report precise structured blockers (or 'unverified') instead of faking success."
+    },
+    "contamination-checker": {
+      "architecture": [
+        {
+          "component": "CLI entry point",
+          "path": "contamcheckr/cli.py",
+          "role": "Argparse-based CLI with three subcommands: capabilities, run, serve. main() wired as console_script contamcheckr."
+        },
+        {
+          "component": "Run configuration",
+          "path": "contamcheckr/config.py",
+          "role": "Frozen RunConfig dataclass with validated parameters (limit, k, split_ratio, shard_count, permutation_count, max_tokens, etc.)."
+        },
+        {
+          "component": "Model backend",
+          "path": "contamcheckr/model.py",
+          "role": "LocalCausalLM wrapper over HuggingFace AutoModelForCausalLM/AutoTokenizer; greedy generation, token logprob table, sequence log-likelihood, device/dtype resolution, capability probing."
+        },
+        {
+          "component": "Benchmark loader",
+          "path": "contamcheckr/benchmarks.py",
+          "role": "Loads bundled sample, local JSONL/CSV, or HuggingFace datasets; normalizes records to id/text, resolves text field aliases, selects splits."
+        },
+        {
+          "component": "Guided overlap method",
+          "path": "contamcheckr/methods/guided.py",
+          "role": "Splits each example, prompts model with dataset-named vs generic prompt, scores ROUGE-L/exact/near, computes guided-over-general gap and index_guided."
+        },
+        {
+          "component": "Min-K%++ method",
+          "path": "contamcheckr/methods/minkpp.py",
+          "role": "Computes Min-K and Min-K%++ token scores from full next-token distribution (normalizes by per-token mean/std)."
+        },
+        {
+          "component": "Canonical-order test",
+          "path": "contamcheckr/methods/canonical_order.py",
+          "role": "Shards examples in published order, compares canonical vs seeded-permutation sequence likelihood, derives p-value and index_order."
+        },
+        {
+          "component": "Calibration & combination",
+          "path": "contamcheckr/calibration.py",
+          "role": "calibrate_minkpp (AUC vs control), combine_indices (base weights 0.5/0.3/0.2, renormalized, banding), bootstrap_combined_ci."
+        },
+        {
+          "component": "Metrics primitives",
+          "path": "contamcheckr/metrics.py",
+          "role": "rouge_l_f1, LCS, Levenshtein, AUC, lowest_percent, clamp, paired_bootstrap_ci."
+        },
+        {
+          "component": "Report builder",
+          "path": "contamcheckr/report.py",
+          "role": "build_report orchestrates all methods, assembles JSON report with caveats/skipped_methods/per_example; write_json, write_csv, format_summary."
+        },
+        {
+          "component": "HTML report writer",
+          "path": "contamcheckr/html_report.py",
+          "role": "Builds standalone HTML report (build_html/write_html)."
+        },
+        {
+          "component": "Local web UI",
+          "path": "contamcheckr/web.py",
+          "role": "stdlib http.server dashboard; loopback-only bind enforcement, form-to-config, execute_audit with model caching, serves JSON/CSV/HTML artifacts, CSP headers."
+        },
+        {
+          "component": "Validation experiment",
+          "path": "experiments/validation.py",
+          "role": "Fine-tunes tiny-gpt2 on a synthetic leak set, runs build_report on leak/clean/base, writes comparison.csv and metadata.json."
+        }
+      ],
+      "benchmarkFacts": "No external/public benchmark suite is bundled. The repo ships small synthetic datasets only: data/sample_benchmark.jsonl (30 lines) and data/sample_control.jsonl (30 lines), plus experiments/data/clean_set.jsonl (40 lines) and experiments/data/leak_set.jsonl (40 lines), the latter generated programmatically by experiments/validation.py (40 archive-card examples per set). These are sanity/validation fixtures, not a contamination benchmark.",
+      "ci": {
+        "present": false,
+        "whatItRuns": "No CI configured. There is no .github/workflows directory (find returned nothing). pyproject.toml declares pytest under [project.optional-dependencies] dev and a [tool.pytest.ini_options] section (testpaths=tests), but nothing runs it automatically."
+      },
+      "claimsNeedingApproval": [
+        "Controlled validation numbers: adapted tiny-gpt2 scored 0.492 on leak set vs 0.008 on clean and 0.131 for base on leak (separation 0.362). These come from a single seeded run on a synthetic dataset with sshleifer/tiny-gpt2 and should be presented with that framing if shown publicly.",
+        "Public-benchmark example claim: distilgpt2 on 10 GLUE SST-2 validation examples scored 0.275 (interval 0.000-0.275), basis guided_plus_order. This is explicitly weak/uncertain and tied to only 10 examples on a tiny model.",
+        "Min-K%++ 'perfectly separated' (AUC 1.000) the trained from clean examples \u2014 true in this synthetic run but should not be generalized.",
+        "Any phrasing implying ContamCheckr detects contamination in real/production models; the tool itself states it produces evidence signals, not membership verdicts.",
+        "Implying the package is installable from PyPI \u2014 it is NOT published (pip install . from source only)."
+      ],
+      "evidence": [
+        {
+          "type": "test_count",
+          "detail": "30 test functions across 7 files: test_calibration.py(3), test_canonical_order.py(4), test_end_to_end.py(4), test_guided.py(6), test_metrics.py(4), test_minkpp.py(4), test_web.py(5). Counted via grep -rE 'def test_' tests | wc -l = 30.",
+          "source": "tests/"
+        },
+        {
+          "type": "code",
+          "detail": "Combined-index base weights are literally {'guided':0.5,'minkpp':0.3,'order':0.2}, renormalized over active methods; bands: <0.2 low, <0.5 moderate, else high evidence.",
+          "source": "contamcheckr/calibration.py:39,66-71"
+        },
+        {
+          "type": "code",
+          "detail": "Web server rejects non-loopback hosts: run_server raises ValueError unless host in {127.0.0.1, ::1, localhost}.",
+          "source": "contamcheckr/web.py:673-676"
+        },
+        {
+          "type": "code",
+          "detail": "Min-K%++ index only contributes when a matched control is supplied; calibrate_minkpp returns (None,None) without control, mapped via clamp(2*(AUC-0.5)).",
+          "source": "contamcheckr/calibration.py:16-26; contamcheckr/report.py:126-134"
+        },
+        {
+          "type": "data",
+          "detail": "Validation metadata records positive_index 0.4923, strongest_negative 0.1308, separation 0.3615, seed 17, tiny-gpt2, 60 epochs, lr 0.005, final_loss 3.452 from initial 10.818.",
+          "source": "experiments/results/metadata.json"
+        },
+        {
+          "type": "packaging",
+          "detail": "contamcheckr is NOT on PyPI: https://pypi.org/pypi/contamcheckr/json returns 404. (debugbrief is a separate, unrelated package that does return 200.)",
+          "source": "PyPI JSON API check"
+        },
+        {
+          "type": "doc",
+          "detail": "README and METHODS.md frame all outputs as evidence with uncertainty, not membership proof; list extensive limitations.",
+          "source": "README.md:48-52; docs/METHODS.md:1-3"
+        },
+        {
+          "type": "git",
+          "detail": "Single commit repo (1 commit, 2026-06-06), HEAD message 'readme: drop test-count badge and keep descriptions generic'.",
+          "source": "git log"
+        }
+      ],
+      "exactName": "ContamCheckr",
+      "executionFlow": [
+        "CLI 'run' parses args into a validated RunConfig (contamcheckr/cli.py _run).",
+        "load_model loads a HuggingFace causal LM + tokenizer, resolves device/dtype, sets seed, probes capabilities (generation / logprobs / full distribution).",
+        "load_benchmark loads the benchmark (sample | local JSONL/CSV | HF dataset) and optional matched control, normalizing to {id,text}.",
+        "build_report runs guided overlap (if generation supported): per-example prefix/suffix split, dataset-named vs generic prompt, ROUGE-L/exact/near scoring, guided-over-general gap -> index_guided.",
+        "build_report runs Min-K%++ (if full distribution supported): per-token normalized scores; calibrate_minkpp computes benchmark-vs-control AUC -> index_minkpp (only with control).",
+        "build_report runs canonical-order test (if logprobs supported): shard, score canonical vs seeded permutations, p-value -> index_order.",
+        "combine_indices renormalizes base weights 0.5/0.3/0.2 over active methods, produces contamination_index, index_basis, and evidence band.",
+        "bootstrap_combined_ci computes a 95% interval; caveats and skipped_methods are assembled.",
+        "Outputs: format_summary to stdout; optional write_json, write_csv, write_html artifacts.",
+        "'serve' subcommand runs the same pipeline through web.execute_audit, caching models and writing latest.json/csv/html."
+      ],
+      "failureMode": "Existing benchmark-contamination detectors tend to emit binary 'this was/was not in training' verdicts that overclaim, depend on cloud APIs or logits not always available, and rarely gate methods on what access a model actually exposes or pair Min-K-style scores with a matched control. ContamCheckr addresses this by producing a calibrated, caveated evidence score, gating each method on probed model capabilities, requiring a matched control for Min-K%++ to contribute, and running entirely locally/CPU-friendly.",
+      "howItWorks": "ContamCheckr loads a local HuggingFace causal language model and probes which signals it can produce (greedy generation, sequence log-likelihood, full next-token distribution). It then runs up to three independent evidence methods on a benchmark dataset: (1) Guided overlap \u2014 prompts the model to reproduce the second half of each example once with the dataset/split named and once generically, scoring both against the reference with ROUGE-L/exact/near match; the positive part of the guided-minus-general ROUGE-L gap is the index. (2) Min-K%++ \u2014 for each target token, normalizes the token log-prob against the probability-weighted mean and std of the full vocabulary distribution, averages the lowest-k% tokens, and only becomes a calibrated index by computing AUC between benchmark and a supplied matched control. (3) Canonical-order permutation test \u2014 shards examples in published order and compares canonical sequence likelihood against seeded random permutations to get a p-value. The three method indices are combined with fixed base weights (0.5 guided, 0.3 Min-K%++, 0.2 order), renormalized over whichever methods produced usable evidence, mapped to low/moderate/high evidence bands, and reported with a bootstrap confidence interval, caveats, and a list of skipped methods. Output is explicitly an evidence score, not a membership verdict.",
+      "images": [],
+      "install": [
+        "python -m pip install .",
+        "contamcheckr run --model sshleifer/tiny-gpt2 --benchmark sample --limit 10 --output report.json --csv per_example.csv --html report.html",
+        "contamcheckr capabilities --model sshleifer/tiny-gpt2",
+        "contamcheckr serve --port 8000",
+        "python -m venv .venv && source .venv/bin/activate && python -m pip install -e .  (from docs/DEMO.md)"
+      ],
+      "keyComponents": [
+        {
+          "name": "build_report",
+          "path": "contamcheckr/report.py",
+          "what": "Central orchestrator: gates each method on capabilities, collects per-example scores, builds the full JSON report with caveats and skipped_methods."
+        },
+        {
+          "name": "combine_indices",
+          "path": "contamcheckr/calibration.py",
+          "what": "Renormalizes the 0.5/0.3/0.2 method weights over active methods and assigns the evidence band."
+        },
+        {
+          "name": "calibrate_minkpp",
+          "path": "contamcheckr/calibration.py",
+          "what": "Turns raw Min-K%++ scores into a calibrated index via benchmark-vs-control AUC; returns None without a control."
+        },
+        {
+          "name": "run_guided_overlap",
+          "path": "contamcheckr/methods/guided.py",
+          "what": "Guided vs general reproduction prompting and gap scoring."
+        },
+        {
+          "name": "score_logits",
+          "path": "contamcheckr/methods/minkpp.py",
+          "what": "Per-token Min-K and Min-K%++ computation with variance normalization and skip rules."
+        },
+        {
+          "name": "canonical_order_test",
+          "path": "contamcheckr/methods/canonical_order.py",
+          "what": "Shard-based canonical vs permuted likelihood permutation test."
+        },
+        {
+          "name": "run_server",
+          "path": "contamcheckr/web.py",
+          "what": "Loopback-only local web dashboard exposing the same pipeline and downloadable artifacts."
+        },
+        {
+          "name": "LocalCausalLM",
+          "path": "contamcheckr/model.py",
+          "what": "Model wrapper providing generation, token logprob table, and sequence log-likelihood."
+        }
+      ],
+      "lastUpdate": "2026-06-06 (single commit; HEAD: 'readme: drop test-count badge and keep descriptions generic')",
+      "limitations": [
+        "Results depend on model capability, prompts, tokenization, sample size, and control quality (README Limitations).",
+        "A weak model can fail to reproduce memorized text; a capable model can produce overlap without memorization.",
+        "Min-K scores shift across domains/tokenizers/model families; Min-K%++ contributes nothing without a matched control.",
+        "Order tests can respond to ordinary topical/narrative coherence rather than memorization.",
+        "Paraphrasing, deduplication, fine-tuning, and deliberate evasion can all reduce detection.",
+        "Validation is a single seeded run on synthetic data with an unusually small model (tiny-gpt2); not evidence about real benchmarks or large models (docs/VALIDATION.md).",
+        "Guided overlap contributed zero in all three validation runs.",
+        "Output is an evidence signal, never proof of training-set membership.",
+        "No CI and not published to PyPI; install is from source only."
+      ],
+      "oneLiner": "A local, CPU-friendly auditor that produces a caveated evidence score for benchmark contamination in causal language models, combining guided reproduction, control-calibrated Min-K%++, and a canonical-order permutation test.",
+      "packaging": {
+        "type": "python",
+        "name": "contamcheckr",
+        "version": "0.1.0",
+        "published": "",
+        "pythonOrNode": "Python >=3.10",
+        "keyDeps": [
+          "torch",
+          "transformers",
+          "datasets",
+          "numpy",
+          "tqdm",
+          "pytest (dev)"
+        ]
+      },
+      "problem": "Large language models are increasingly trained on web-scraped corpora that may include the very benchmarks used to evaluate them, inflating reported scores. Existing approaches often overclaim binary membership verdicts and may require cloud access or signals a model does not expose. ContamCheckr instead audits a local HuggingFace causal LM and produces an evidence score with explicit caveats \u2014 guided reproduction overlap, control-calibrated Min-K%++, and a canonical-order permutation test \u2014 gating each method on the model's probed capabilities. It is explicitly framed as evidence with uncertainty, not proof that an example was in the training corpus.",
+      "relatedPaperTopics": [
+        "benchmark/data contamination detection in LLMs",
+        "membership inference attacks (Min-K% Prob, Min-K%++)",
+        "guided/prompted memorization extraction from language models",
+        "canonical-order / permutation-based contamination tests",
+        "matched-control calibration and AUC-based detection",
+        "bootstrap confidence intervals for evaluation metrics",
+        "LLM evaluation reliability and leakage-aware benchmarking",
+        "ROUGE-L and overlap metrics for text reproduction"
+      ],
+      "repo": "/tmp/portfolio-audit/contamination-checker (local clone; no remote inspected; single commit dated 2026-06-06; author Hari Krishna Kancharla)",
+      "status": "Working alpha (v0.1.0). Functional CLI + local web UI with a tested core pipeline (30 tests across 7 files) and a documented controlled validation run. Not published to PyPI, no CI, no released changelog/contributing/security docs. Single-commit repository.",
+      "technologies": [
+        "Python 3.10+",
+        "PyTorch",
+        "HuggingFace Transformers",
+        "HuggingFace Datasets",
+        "NumPy",
+        "tqdm",
+        "pytest",
+        "Python stdlib http.server (web UI)",
+        "setuptools (build backend)"
+      ],
+      "tests": {
+        "present": true,
+        "framework": "pytest",
+        "count": 30,
+        "whatTheyCover": "30 test functions across 7 files: calibration/weight combination (3), canonical-order test (4), end-to-end report pipeline (4), guided overlap (6), metrics primitives ROUGE/Levenshtein/AUC (4), Min-K%++ scoring (4), and web form/config/handler (5). Counted via grep -rE 'def test_' tests | wc -l."
+      },
+      "thesis": "Benchmark contamination should be surfaced as a transparent, locally-computable evidence score with explicit method gating and caveats, not as an overconfident binary verdict."
+    }
+  },
+  "earlierWork": {
+    "projects": [
+      {
+        "name": "Prompt-Budd",
+        "oneLiner": "Chrome extension + FastAPI backend that enhances and scores LLM prompts in real time across ChatGPT, modelB, Gemini, and others.",
+        "purpose": "Improves prompt quality inline on major LLM chat sites: scores prompts (Gemini with OpenAI fallback), detects PII via regex, rewrites vague prompts into structured templates, recommends the best model for a given prompt history, and generates session summaries. Also exposes prompt enhancement as an MCP tool for Cursor/modelB Desktop/LangChain.",
+        "technologies": [
+          "Python",
+          "FastAPI",
+          "Chrome Extension (Manifest v3)",
+          "JavaScript",
+          "FastMCP",
+          "Gemini API",
+          "OpenAI API",
+          "Groq API",
+          "Docker",
+          "Google Cloud Run",
+          "GitHub Actions CI/CD"
+        ],
+        "status": "active",
+        "liveLink": "https://promtbud.com/",
+        "liveLinkWorks": true,
+        "lastUpdate": "2026-03-26 (commit 0c99024 'Update LICENSE'; last substantive commits around same period)",
+        "readiness": "Most public-ready of the set. Has a working live site (HTTP 200), real multi-component architecture (extension + backend + MCP server), CI/CD to Cloud Run, and a clean, accurate README. Most polished secondary project.",
+        "recommendation": "Include as Earlier Work. It is the strongest candidate here with a verified live link and complete architecture, but it is still a secondary project and should sit below primary/flagship work, not at equal prominence."
+      },
+      {
+        "name": "self-healing-pipeline",
+        "oneLiner": "Python/Flask data pipeline with ML-based anomaly detection, automated repair strategies, and a real-time monitoring dashboard.",
+        "purpose": "Demonstrates a self-healing data pipeline: uses an Isolation Forest model to detect/predict failures, applies automated repair strategies, persists metrics and repair logs to SQLite, and surfaces a live monitoring dashboard with Slack alerting. README claims '85%+ repair success' and '15-minute advance warning' (self-reported, unverified marketing-style metrics).",
+        "technologies": [
+          "Python",
+          "Flask",
+          "scikit-learn (Isolation Forest)",
+          "pandas",
+          "numpy",
+          "psutil",
+          "SQLite",
+          "Slack webhooks",
+          "Docker / Docker Compose"
+        ],
+        "status": "prototype",
+        "liveLink": "",
+        "liveLinkWorks": false,
+        "lastUpdate": "2026-03-26 (commit fa42b5f 'Remove .DS_Store and add to gitignore')",
+        "readiness": "Single-file implementation (real_pipeline.py, ~41KB) plus a committed SQLite DB. No live deployment, no tests visible, and README mentions Docker but no Dockerfile/compose is present in the repo. README metrics are self-reported. Conceptually interesting but reads as a demo/portfolio piece rather than a production system despite 'production-grade' wording.",
+        "recommendation": "Show with historical label (or omit). If included, frame honestly as a self-contained ML monitoring demo and avoid repeating the unverified '85%+'/'production-grade' claims. Low prominence."
+      },
+      {
+        "name": "AskRC",
+        "oneLiner": "End-to-end MLOps RAG chatbot answering questions about Northeastern's Research Computing resources.",
+        "purpose": "Academic/team project building a Retrieval-Augmented Generation chatbot over the Research Computing Department's docs. Full MLOps pipeline: web scraping, preprocessing, Azure Blob Storage, Azure Cognitive Search indexing, Airflow orchestration, DVC data versioning, MLflow tracking, bias/anomaly checks, pytest + GitHub Actions CI, and a Streamlit UI backed by Azure.",
+        "technologies": [
+          "Python",
+          "Streamlit",
+          "Azure Cognitive Search",
+          "Azure Blob Storage",
+          "Airflow",
+          "DVC",
+          "MLflow",
+          "OpenAI",
+          "Docker / docker-compose",
+          "pytest",
+          "GitHub Actions"
+        ],
+        "status": "archived",
+        "liveLink": "",
+        "liveLinkWorks": false,
+        "lastUpdate": "2024-12-01 (commit e0f1b85 'update docker config')",
+        "readiness": "Oldest project in the set (last meaningful work Dec 2024). Comprehensive, well-documented MLOps pipeline that demonstrates strong breadth, but it is tightly coupled to Azure infrastructure and Northeastern-specific data, so it is not independently runnable or live. Appears to be a graduate course/team project.",
+        "recommendation": "Show with historical label. Good evidence of MLOps breadth; present as a dated academic project with the December 2024 timestamp and team context. No live demo to link. Low-to-medium prominence."
+      },
+      {
+        "name": "GenBI",
+        "oneLiner": "AI data-analysis API: upload a dataset, ask in plain English, get charts, tables, or text answers.",
+        "purpose": "FastAPI + LangChain backend that ingests CSV/Excel/JSON, classifies a natural-language query into plot/table/answer, then responds with Plotly visualizations, Pandas tables, or GPT-4o text. Uses Firebase for auth/session storage and is configured for Vercel serverless deployment.",
+        "technologies": [
+          "Python",
+          "FastAPI",
+          "LangChain",
+          "OpenAI GPT-4o",
+          "Plotly",
+          "Pandas",
+          "Firebase / Firestore",
+          "Vercel (serverless)"
+        ],
+        "status": "prototype",
+        "liveLink": "",
+        "liveLinkWorks": false,
+        "lastUpdate": "2026-03-26 (commit e5e685c 'Update LICENSE')",
+        "readiness": "Backend/API only, no frontend in the repo, so there is nothing user-facing to demo even though it is wired for Vercel. No live URL was provided or found. Clean README and reasonable structure, but a note file 'responce_generator.py' typo suggests early-stage. Functional as an API building block rather than a finished product.",
+        "recommendation": "Include as Earlier Work (low prominence) or show with historical label. Solid LLM/data-agent concept but API-only with no live demo; do not overstate as a finished app. Keep secondary."
+      },
+      {
+        "name": "weather-dashboard",
+        "oneLiner": "Nimbus: React + Flask weather dashboard with current conditions, 5-day forecast, and weather-adaptive UI.",
+        "purpose": "Standard weather app: search any city or use geolocation, view current conditions and a 5-day forecast with dynamic weather-based backgrounds, C/F toggle, and recent-search history. React frontend with a thin Flask backend proxying OpenWeatherMap.",
+        "technologies": [
+          "React 19",
+          "Axios",
+          "Python 3",
+          "Flask",
+          "Flask-CORS",
+          "OpenWeatherMap API",
+          "Custom CSS (glassmorphism)"
+        ],
+        "status": "prototype",
+        "liveLink": "",
+        "liveLinkWorks": false,
+        "lastUpdate": "2026-03-22 (commit 7a776bd 'Update README.md')",
+        "readiness": "Well-structured and clearly documented, but it is a common beginner/portfolio-filler project (weather dashboard) with no live deployment and no differentiating complexity. Functional locally with an API key.",
+        "recommendation": "Omit, or show with historical label only if more substantive projects are scarce. It is the least distinctive item in the set and adds little signal next to the AI/MLOps work; lowest prominence."
+      },
+      {
+        "name": "Visioncraft",
+        "oneLiner": "AI text-to-video generator that turns a topic into a captioned short video with AI script, images, and voiceover.",
+        "purpose": "Next.js app that generates short-form videos end to end: Gemini writes the script, Replicate generates images, Google Cloud Text-to-Speech produces voiceover, AssemblyAI generates captions, and Remotion renders the video. Uses Clerk for auth and Neon/Drizzle (Postgres) for data.",
+        "technologies": [
+          "Next.js 15",
+          "React 19",
+          "Remotion",
+          "Google Gemini",
+          "Replicate",
+          "Google Cloud Text-to-Speech",
+          "AssemblyAI",
+          "Clerk (auth)",
+          "Neon Postgres",
+          "Drizzle ORM",
+          "Firebase",
+          "Tailwind CSS"
+        ],
+        "status": "prototype",
+        "liveLink": "",
+        "liveLinkWorks": false,
+        "lastUpdate": "2025-02-26 (commit 8cd3a92 'Update to videolist')",
+        "readiness": "Ambitious, multi-service AI video pipeline with a real feature set (auth, DB, four AI integrations, Remotion rendering). Significant weakness: README is the untouched default create-next-app boilerplate, so the repo does not document what it actually does. No live URL provided or found. Committed output.mp3 and remotion.zip artifacts suggest a working demo existed locally.",
+        "recommendation": "Include as Earlier Work (with a proper written description) or show with historical label. Technically the most ambitious project here, but the placeholder README and lack of a live demo hurt readiness. If featured, write a real description and ideally link a demo video; otherwise keep secondary. Do not present at flagship prominence given the boilerplate docs and Feb 2025 staleness."
+      }
+    ]
+  },
+  "existingPortfolio": {
+    "stack": "UNKNOWN / NOT DETERMINABLE FROM SOURCE. The cloned repo at /tmp/portfolio-audit/harihkk contains no source code. Its only tracked file is /tmp/portfolio-audit/harihkk/README.md, which holds a single newline byte (0x0a, confirmed via xxd). Git history has exactly one commit (2784aee, \"Delete assets directory\", Hari <kancharla.ha@northeastern.edu>, 2026-05-25) which only ADDS that empty README. No HTML/CSS/JS, no package.json, no framework config, no build files, no assets exist in the working tree or anywhere in `git log --all`. `git fsck --lost-found` found no dangling/lost objects and `git stash list` is empty, so nothing is recoverable. The prior site's tech stack cannot be determined from this source.",
+    "designNotes": "No design or visual approach is recoverable from the source. The repo is empty aside from a 1-byte README. The single commit message \"Delete assets directory\" implies a previous assets folder once existed, but it was never part of this repo's recorded history (the commit only adds the empty README; it does not delete tracked files), so no images, fonts, color palette, layout, or styling can be inspected. Any claim about the old site's look would be fabrication.",
+    "playfulElements": [
+      "NONE FOUND IN SOURCE. No HTML/JS/CSS or copy exists in the repo to extract playful or interactive elements from.",
+      "The only playful text artifact available is the GitHub bio provided in the task brief (not found in the repo files): 'i run on coffee. the code barely runs.' \u2014 self-deprecating, lowercase, dry developer humor. This is the single concrete signal of the desired playful tone and is the best anchor for the refined-playfulness goal.",
+      "Tone cue derived from that bio: all-lowercase styling, coffee/caffeine motif, ironic 'it barely works' engineering humor."
+    ],
+    "contentToPreserve": [
+      "GitHub bio (from task brief, not from repo): 'i run on coffee. the code barely runs.' \u2014 worth preserving/refining as it is the only surviving voice artifact.",
+      "Author identity from git metadata: Hari, email kancharla.ha@northeastern.edu (Northeastern University address) \u2014 suggests a Northeastern affiliation worth verifying against the resume.",
+      "No other copy, project descriptions, taglines, or Easter eggs exist in the source to preserve."
+    ],
+    "toneNotes": "Cannot assess copy tone from the source \u2014 there is no copy in the repo. The only evidence of voice is the supplied GitHub bio, which reads as casual, lowercase, self-deprecating, caffeine-themed dev humor. Treat this single line as the lone tone reference; do not infer a broader voice from a one-liner without more source material.",
+    "easterEggs": [
+      "NONE FOUND. No source files exist in which an Easter egg could be embedded. Searched working tree (only README.md, 1 byte) and full git history (single commit adding that README)."
+    ],
+    "conflictsWithResume": [
+      "Cannot compare against the resume from this source: the repo contains no titles, dates, role claims, project descriptions, or any prose to check. No content-level conflicts can be detected because there is no content.",
+      "One metadata signal to verify against the resume: git author email kancharla.ha@northeastern.edu implies a Northeastern University affiliation \u2014 confirm this matches the resume's education/affiliation, but note this is metadata, not a stated claim, so it is not itself a conflict.",
+      "Note for conflict-logging: the commit 'Delete assets directory' (2026-05-25) suggests the real portfolio source lives elsewhere (e.g., a different branch, repo, or the deployed GitHub Pages site) and was not captured in this clone. The source audited here is empty, so absence of conflicts here does NOT mean the live site agrees with the resume."
+    ]
+  },
+  "reference": {
+    "sections": [
+      {
+        "name": "Editorial Masthead + Nav",
+        "experientialRole": "Newspaper-style nameplate establishing the conceit instantly: serif wordmark, Vol./No./Est./live date ('June 2026', 'Est. ... of 2030'), thin rules, centered nav. Sets a credible, institutional 'publication' frame before any content. Signals taste and confidence in the first viewport."
+      },
+      {
+        "name": "Lead Story",
+        "experientialRole": "Front-page thesis headline ('Building at the frontier of AI, mathematics & philosophy') acting as the editorial lede \u2014 one sentence that frames the entire person/practice. Functions as the dominant typographic moment and orientation anchor."
+      },
+      {
+        "name": "Portrait Hero",
+        "experientialRole": "Oversized name (clamp to ~8rem) as a graphic hero plate paired with portrait imagery; identity assertion and visual rest-point. High contrast, dramatic scale, the 'cover photo' of the issue."
+      },
+      {
+        "name": "Statistics / By-the-numbers",
+        "experientialRole": "Animated count-up metrics (250+, 284+, 100+, 15+, 300+, 7+) that compress credibility into scannable proof. Provides momentum and a 'box score' read of impact before details."
+      },
+      {
+        "name": "Index / Four Frontiers",
+        "experientialRole": "'Four frontiers.' acts as a table-of-contents / thematic index \u2014 segments the person into navigable domains (AI, math, philosophy, etc.). Wayfinding plus identity framing."
+      },
+      {
+        "name": "Ventures & Leadership",
+        "experientialRole": "'What I've built and led.' \u2014 a grid of roles/orgs (HIXS Leadership, govt internships) communicating operational seriousness and reach. The 'business section'."
+      },
+      {
+        "name": "Debate Archive",
+        "experientialRole": "'Team India & global championships' on newsprint background \u2014 a competitive-record archive (Team India 2022\u201324, Eskom ISF) establishing elite-tier external validation. Distinct visual treatment signals an archival/record register."
+      },
+      {
+        "name": "Publications / Research",
+        "experientialRole": "'Published work.' \u2014 formal research listings (titled papers on inequality, gender) lending academic gravitas. Reads as a citations/bibliography column."
+      },
+      {
+        "name": "Projects",
+        "experientialRole": "'Things I've coded.' \u2014 built artifacts (ParkinStep, Helping Hand, Nutrizen) as the maker's showcase; concrete proof of execution alongside the intellectual record."
+      },
+      {
+        "name": "Instagram / Press Gallery",
+        "experientialRole": "'@shivanshgupta2605' social grid + press \u2014 social proof and texture, a lighter human/visual interlude between dense record sections."
+      },
+      {
+        "name": "Latest Video",
+        "experientialRole": "'Latest Video' \u2014 an embedded moving-image moment; dynamic media break that demonstrates presence/voice and varies pacing."
+      },
+      {
+        "name": "Awards",
+        "experientialRole": "'Honors & awards.' (Young Changemaker 2025) \u2014 a verified-milestones ledger; external recognition formalized as a list."
+      },
+      {
+        "name": "Moments Gallery",
+        "experientialRole": "'Moments.' \u2014 photographic gallery; emotional/human texture and a visual exhale near the foot of the issue."
+      },
+      {
+        "name": "Writing & Newsletter",
+        "experientialRole": "'Essays & newsletter.' / 'Letters by Shivansh' \u2014 an op-ed/subscribe column inviting ongoing relationship; converts visitor into reader."
+      },
+      {
+        "name": "Contact",
+        "experientialRole": "'Let's work together.' \u2014 closing call-to-action / open channel; the back-page colophon that converts interest into outreach."
+      }
+    ],
+    "rhythmNotes": "Density: high but disciplined. The site packs ~15 sections yet never feels cluttered because each section is gated by a full-width serif headline + thin border rule (border-b border-border / border-ink), so the eye gets a hard reset between blocks. Pacing alternates deliberately: dense record sections (ventures grid, publications, debate archive on newsprint) are interleaved with visual exhales (Instagram grid, video, moments gallery). Hierarchy is almost entirely typographic \u2014 a single high-contrast serif (font-black) at huge clamp() sizes (clamp(2.4rem,9.5vw,8rem) for the name, clamp(1.5rem,5vw,3.8rem) for section heads) does the heavy lifting; body and metadata recede in size and weight. Color is a restrained newspaper palette: cream/newsprint backgrounds, near-black ink (#1A1916), hairline borders \u2014 almost no chroma, which is what makes it read 'editorial' rather than 'startup'. Interaction quality: tasteful, not gimmicky \u2014 stat numbers count up on scroll (note the >0< placeholders that animate to 250+/284+/etc.), headings have opacity:0 + translateY/scale entrance transitions revealed on scroll. Motion is subtle, single-purpose, and reinforces the 'turning the page' metaphor rather than competing with content. Leading is tight (leading-none / leading-[0.88]) and tracking negative (-0.025em) on display type for a printed-headline feel. The masthead conceit (Vol./No./Est./live month-year) is carried consistently and is the single strongest taste signal.",
+    "parityMapping": [
+      {
+        "referenceSection": "Editorial Masthead + Nav (serif nameplate, Vol./No./Est./'June 2026', hairline rules, centered nav)",
+        "systemsJournalEquivalent": "Systems Journal masthead",
+        "notes": "Mirror the institutional nameplate energy: 'The Systems Journal' wordmark, a Vol./No./Issue line, an 'Est.' and live-date stamp, hairline rules, centered/inline nav. Carry the conceit consistently. Borrow the FORMAT (masthead grammar, hairline borders, live date) \u2014 invent our own wordmark, dates, and copy."
+      },
+      {
+        "referenceSection": "Lead Story ('Building at the frontier of AI, mathematics & philosophy')",
+        "systemsJournalEquivalent": "Engineering thesis",
+        "notes": "One front-page lede sentence stating Hari's engineering thesis (e.g. the kind of systems he builds and why). Same role \u2014 dominant typographic lede that frames everything. Write original copy; do not reuse 'frontier' phrasing."
+      },
+      {
+        "referenceSection": "Portrait Hero (giant name + photo plate)",
+        "systemsJournalEquivalent": "Interactive systems plate (NO photo)",
+        "notes": "Keep the oversized-name graphic hero and dramatic scale, but replace the portrait with an interactive systems visualization (e.g. a live diagram/canvas of an architecture or data flow). Explicitly NO photograph \u2014 the visual proof is a system, not a face."
+      },
+      {
+        "referenceSection": "Statistics / by-the-numbers (animated count-up: 250+, 284+, 100+, 15+)",
+        "systemsJournalEquivalent": "Verified metrics",
+        "notes": "Same scannable 'box score' of impact with count-up-on-scroll, but every number must be a verified engineering metric (latency, throughput, uptime, scale) with provenance. Reuse the count-up interaction pattern; never reuse their actual figures."
+      },
+      {
+        "referenceSection": "Index / Four Frontiers",
+        "systemsJournalEquivalent": "Systems Journal index",
+        "notes": "A table-of-contents / thematic index segmenting the work into navigable domains. Same wayfinding + identity-framing role. Our own domain taxonomy."
+      },
+      {
+        "referenceSection": "Index domains as identity ('Four frontiers.')",
+        "systemsJournalEquivalent": "Engineering frontiers",
+        "notes": "The identity/interests beat becomes 'engineering frontiers' \u2014 the technical domains Hari pushes on. Same role as their interests segmentation; original domains and copy."
+      },
+      {
+        "referenceSection": "Ventures & Leadership ('What I've built and led.')",
+        "systemsJournalEquivalent": "Professional engineering record",
+        "notes": "Grid of roles/positions communicating operational seriousness \u2014 recast as a professional engineering record (employers, scope, ownership). Borrow the grid layout idea, not the org names."
+      },
+      {
+        "referenceSection": "Debate Archive ('Team India & global championships', newsprint bg)",
+        "systemsJournalEquivalent": "Evaluation / benchmark record",
+        "notes": "The distinct 'archival record on newsprint' treatment maps to an evaluation/benchmark record \u2014 results against named benchmarks/competitions with dates. Reuse the differentiated archival visual register; original benchmark data."
+      },
+      {
+        "referenceSection": "Publications ('Published work.', titled papers)",
+        "systemsJournalEquivalent": "Research Desk (external papers, NOT Hari's)",
+        "notes": "Formal citations/bibliography column \u2014 but per guidance this is a Research Desk surfacing EXTERNAL papers Hari engages with (curated reading/influences), NOT Hari's own authored publications. Same academic-listing aesthetic; different ownership semantics."
+      },
+      {
+        "referenceSection": "Projects ('Things I've coded.', ParkinStep/Nutrizen)",
+        "systemsJournalEquivalent": "Flagship systems + archive",
+        "notes": "Maker showcase recast as flagship systems (deep case studies) plus a lighter archive of smaller builds. Same two-tier proof-of-execution role. Original projects only."
+      },
+      {
+        "referenceSection": "Instagram grid + press ('@handle')",
+        "systemsJournalEquivalent": "Releases / packages / CI / artifacts",
+        "notes": "The social-proof/texture grid becomes engineering social proof: published packages, release notes, CI status, downloadable artifacts. Borrow the grid-as-texture pacing role; replace social content entirely."
+      },
+      {
+        "referenceSection": "Latest Video",
+        "systemsJournalEquivalent": "Interactive demonstrations",
+        "notes": "The moving-image dynamic break becomes interactive demos (live playgrounds, recorded system walkthroughs). Same pacing-variation role; our own media."
+      },
+      {
+        "referenceSection": "Awards ('Honors & awards.', Young Changemaker 2025)",
+        "systemsJournalEquivalent": "Verified milestones",
+        "notes": "Recognition ledger recast as verified milestones (shipped-at-scale moments, certifications, notable acceptances) with provenance. Same list register; original milestones."
+      },
+      {
+        "referenceSection": "Moments gallery ('Moments.')",
+        "systemsJournalEquivalent": "Build artifacts",
+        "notes": "Photographic exhale gallery becomes a gallery of build artifacts (architecture diagrams, dashboards, screenshots of systems). Keep the visual-breather role; replace personal photos with engineering imagery."
+      },
+      {
+        "referenceSection": "Writing & Newsletter ('Essays & newsletter.' / 'Letters by')",
+        "systemsJournalEquivalent": "Notes / Substack (optional newsletter)",
+        "notes": "Op-ed column + subscribe maps to engineering notes/Substack. Newsletter is OPTIONAL per guidance \u2014 include the relationship-building role only if there's real content to back it."
+      },
+      {
+        "referenceSection": "Contact ('Let's work together.')",
+        "systemsJournalEquivalent": "Open channel",
+        "notes": "Closing CTA / colophon as an 'open channel' for outreach. Same back-page conversion role; original copy and links."
+      }
+    ],
+    "cautions": "Do NOT copy any of the following from shivanshgupta.com. (1) Code/markup: their Tailwind class strings, the exact clamp() type-scale values, the ink color token #1A1916, the cream/newsprint/border token names, the opacity:0 + translateY/scale reveal keyframes, or any component structure \u2014 reimplement independently. (2) Copy: every headline is theirs ('Building at the frontier of AI, mathematics & philosophy', 'Four frontiers.', 'What I've built and led.', 'Things I've coded.', 'Published work.', 'Honors & awards.', 'Moments.', 'Essays & newsletter.', 'Let's work together.', 'Letters by Shivansh') \u2014 write entirely new copy in our own voice. (3) Assets: no portraits/photos (the hero must be an interactive systems plate, not a photo), no Instagram/moments imagery, no logos. (4) Data: never reuse their numbers (250+, 284+, 100+, 15+, 300+, 7+) or credentials (Team India, Eskom ISF, Young Changemaker 2025, the named papers/projects) \u2014 all metrics must be Hari's own and verifiable. (5) Identity semantics: their Publications are self-authored; OUR Research Desk must surface EXTERNAL papers, not present them as Hari's work \u2014 keep that distinction sharp to avoid implying false authorship. (6) Conceit risk: the masthead/Vol./No./Est. newspaper framing is a genre convention we can adopt, but match it with REAL editorial substance \u2014 a thin masthead over hype reads as costume. Borrow the rhythm (typographic hierarchy, hairline section rules, dense-vs-exhale pacing, subtle scroll-reveal + count-up motion, near-monochrome palette), not the artifacts. Keep motion subtle and single-purpose as they do; avoid turning the count-ups/reveals into gimmicks."
+  },
+  "research": {
+    "papers": [
+      {
+        "title": "WebArena: A Realistic Web Environment for Building Autonomous Agents",
+        "authors": [
+          "Shuyan Zhou",
+          "Frank F. Xu",
+          "Hao Zhu",
+          "Xuhui Zhou",
+          "Robert Lo",
+          "Abishek Sridhar",
+          "Xianyi Cheng",
+          "Tianyue Ou",
+          "Yonatan Bisk",
+          "Daniel Fried",
+          "Uri Alon",
+          "Graham Neubig"
+        ],
+        "arxivId": "2307.13854",
+        "submittedDate": "2023-07-25",
+        "latestRevision": "2024-04-16",
+        "arxivUrl": "https://arxiv.org/abs/2307.13854",
+        "primaryCategory": "cs.AI",
+        "abstractParaphrase": "Introduces a self-hostable, reproducible web environment with functional websites (e-commerce, forums, content management, collaboration tools) plus realistic tasks and outcome-based functional-correctness checks for evaluating autonomous agents that operate a browser.",
+        "connectedSystem": "Helm-browser-agent",
+        "connectedTopic": "browser agents / web interaction",
+        "whyItMatters": "Provides a reproducible task suite and functional-correctness evaluation harness that a browser-agent evaluation system can adopt as a baseline environment and scoring methodology.",
+        "verifiedViaApi": true,
+        "apiUrlUsed": "https://export.arxiv.org/api/query?id_list=2307.13854"
+      },
+      {
+        "title": "WebShop: Towards Scalable Real-World Web Interaction with Grounded Language Agents",
+        "authors": [
+          "Shunyu Yao",
+          "Howard Chen",
+          "John Yang",
+          "Karthik Narasimhan"
+        ],
+        "arxivId": "2207.01206",
+        "submittedDate": "2022-07-04",
+        "latestRevision": "2023-02-08",
+        "arxivUrl": "https://arxiv.org/abs/2207.01206",
+        "primaryCategory": "cs.CL",
+        "abstractParaphrase": "Presents a simulated e-commerce shopping environment with many products and crowdsourced instructions where agents must search, navigate, and act on web pages to fulfill purchase goals, evaluated against reward signals and human performance.",
+        "connectedSystem": "Helm-browser-agent",
+        "connectedTopic": "browser agents / web interaction",
+        "whyItMatters": "Demonstrates grounded web interaction with reward-based scoring, useful as a reference design for task definition and reward shaping in a browser-agent evaluation pipeline.",
+        "verifiedViaApi": true,
+        "apiUrlUsed": "https://export.arxiv.org/api/query?id_list=2207.01206"
+      },
+      {
+        "title": "Mind2Web: Towards a Generalist Agent for the Web",
+        "authors": [
+          "Xiang Deng",
+          "Yu Gu",
+          "Boyuan Zheng",
+          "Shijie Chen",
+          "Samuel Stevens",
+          "Boshi Wang",
+          "Huan Sun",
+          "Yu Su"
+        ],
+        "arxivId": "2306.06070",
+        "submittedDate": "2023-06-09",
+        "latestRevision": "2023-12-09",
+        "arxivUrl": "https://arxiv.org/abs/2306.06070",
+        "primaryCategory": "cs.CL",
+        "abstractParaphrase": "Offers a dataset of real-website tasks across many domains with recorded action sequences, intended to train and evaluate generalist agents that follow instructions to operate live web pages.",
+        "connectedSystem": "Helm-browser-agent",
+        "connectedTopic": "browser agents / web interaction",
+        "whyItMatters": "Supplies real-website trajectories and element-selection metrics that can inform how a browser-agent harness measures action prediction and step accuracy across diverse sites.",
+        "verifiedViaApi": true,
+        "apiUrlUsed": "https://export.arxiv.org/api/query?id_list=2306.06070"
+      },
+      {
+        "title": "AgentBench: Evaluating LLMs as Agents",
+        "authors": [
+          "Xiao Liu",
+          "Hao Yu",
+          "Hanchen Zhang",
+          "Yifan Xu",
+          "Xuanyu Lei",
+          "Hanyu Lai",
+          "Yu Gu",
+          "Hangliang Ding",
+          "Kaiwen Men",
+          "Kejuan Yang",
+          "Shudan Zhang",
+          "Xiang Deng",
+          "Aohan Zeng",
+          "Zhengxiao Du",
+          "Chenhui Zhang",
+          "Sheng Shen",
+          "Tianjun Zhang",
+          "Yu Su",
+          "Huan Sun",
+          "Minlie Huang",
+          "Yuxiao Dong",
+          "Jie Tang"
+        ],
+        "arxivId": "2308.03688",
+        "submittedDate": "2023-08-07",
+        "latestRevision": "2025-10-04",
+        "arxivUrl": "https://arxiv.org/abs/2308.03688",
+        "primaryCategory": "cs.AI",
+        "abstractParaphrase": "A multi-environment benchmark spanning interactive settings such as operating systems, databases, web browsing, and games to measure how well language models act as reasoning and decision-making agents over multiple turns.",
+        "connectedSystem": "General",
+        "connectedTopic": "agent evaluation",
+        "whyItMatters": "Establishes a multi-task framework and aggregate scoring conventions that a general agent-evaluation effort can reuse for cross-environment comparison.",
+        "verifiedViaApi": true,
+        "apiUrlUsed": "https://export.arxiv.org/api/query?id_list=2308.03688"
+      },
+      {
+        "title": "AgentBoard: An Analytical Evaluation Board of Multi-turn LLM Agents",
+        "authors": [
+          "Chang Ma",
+          "Junlei Zhang",
+          "Zhihao Zhu",
+          "Cheng Yang",
+          "Yujiu Yang",
+          "Yaohui Jin",
+          "Zhenzhong Lan",
+          "Lingpeng Kong",
+          "Junxian He"
+        ],
+        "arxivId": "2401.13178",
+        "submittedDate": "2024-01-24",
+        "latestRevision": "2024-12-23",
+        "arxivUrl": "https://arxiv.org/abs/2401.13178",
+        "primaryCategory": "cs.CL",
+        "abstractParaphrase": "Proposes an analytical evaluation framework with fine-grained progress metrics and an interactive board for diagnosing where multi-turn agents succeed or fail across partially observable tasks, beyond final success rates.",
+        "connectedSystem": "General",
+        "connectedTopic": "agent evaluation",
+        "whyItMatters": "Introduces progress-rate and subgoal diagnostics that a general agent-evaluation system can adopt to surface partial-credit signals rather than only pass/fail outcomes.",
+        "verifiedViaApi": true,
+        "apiUrlUsed": "https://export.arxiv.org/api/query?id_list=2401.13178"
+      },
+      {
+        "title": "SWE-bench: Can Language Models Resolve Real-World GitHub Issues?",
+        "authors": [
+          "Carlos E. Jimenez",
+          "John Yang",
+          "Alexander Wettig",
+          "Shunyu Yao",
+          "Kexin Pei",
+          "Ofir Press",
+          "Karthik Narasimhan"
+        ],
+        "arxivId": "2310.06770",
+        "submittedDate": "2023-10-10",
+        "latestRevision": "2024-11-11",
+        "arxivUrl": "https://arxiv.org/abs/2310.06770",
+        "primaryCategory": "cs.CL",
+        "abstractParaphrase": "Constructs a benchmark from real GitHub issues and pull requests where a model must produce a patch that makes a repository's test suite pass, evaluating end-to-end software issue resolution against hidden tests.",
+        "connectedSystem": "code-review-arena",
+        "connectedTopic": "code-generation or code-repair evaluation",
+        "whyItMatters": "Defines the patch-against-tests evaluation pattern central to a code-repair arena, including repository setup and test-based verification of generated fixes.",
+        "verifiedViaApi": true,
+        "apiUrlUsed": "https://export.arxiv.org/api/query?id_list=2310.06770"
+      },
+      {
+        "title": "Teaching Large Language Models to Self-Debug",
+        "authors": [
+          "Xinyun Chen",
+          "Maxwell Lin",
+          "Nathanael Sch\u00e4rli",
+          "Denny Zhou"
+        ],
+        "arxivId": "2304.05128",
+        "submittedDate": "2023-04-11",
+        "latestRevision": "2023-10-05",
+        "arxivUrl": "https://arxiv.org/abs/2304.05128",
+        "primaryCategory": "cs.CL",
+        "abstractParaphrase": "Describes a prompting approach in which a model inspects its own generated code, explains it, and uses execution feedback to iteratively diagnose and correct errors without additional supervision.",
+        "connectedSystem": "code-review-arena",
+        "connectedTopic": "debugging / software observability",
+        "whyItMatters": "Provides an execution-feedback self-correction loop that a code-repair arena can integrate as an iterative fix strategy and as a baseline for measuring repair effectiveness.",
+        "verifiedViaApi": true,
+        "apiUrlUsed": "https://export.arxiv.org/api/query?id_list=2304.05128"
+      },
+      {
+        "title": "Evaluating Large Language Models Trained on Code",
+        "authors": [
+          "Mark Chen",
+          "Jerry Tworek",
+          "Heewoo Jun",
+          "Qiming Yuan",
+          "Henrique Ponde de Oliveira Pinto",
+          "Jared Kaplan",
+          "Harri Edwards",
+          "Yuri Burda",
+          "Nicholas Joseph",
+          "Greg Brockman",
+          "Alex Ray",
+          "Raul Puri",
+          "Gretchen Krueger",
+          "Michael Petrov",
+          "Heidy Khlaaf",
+          "Girish Sastry",
+          "Pamela Mishkin",
+          "Brooke Chan",
+          "Scott Gray",
+          "Nick Ryder",
+          "Mikhail Pavlov",
+          "Alethea Power",
+          "Lukasz Kaiser",
+          "Mohammad Bavarian",
+          "Clemens Winter",
+          "Philippe Tillet",
+          "Felipe Petroski Such",
+          "Dave Cummings",
+          "Matthias Plappert",
+          "Fotios Chantzis",
+          "Elizabeth Barnes",
+          "Ariel Herbert-Voss",
+          "William Hebgen Guss",
+          "Alex Nichol",
+          "Alex Paino",
+          "Nikolas Tezak",
+          "Jie Tang",
+          "Igor Babuschkin",
+          "Suchir Balaji",
+          "Shantanu Jain",
+          "William Saunders",
+          "Christopher Hesse",
+          "Andrew N. Carr",
+          "Jan Leike",
+          "Josh Achiam",
+          "Vedant Misra",
+          "Evan Morikawa",
+          "Alec Radford",
+          "Matthew Knight",
+          "Miles Brundage",
+          "Mira Murati",
+          "Katie Mayer",
+          "Peter Welinder",
+          "Bob McGrew",
+          "Dario Amodei",
+          "Sam McCandlish",
+          "Ilya Sutskever",
+          "Wojciech Zaremba"
+        ],
+        "arxivId": "2107.03374",
+        "submittedDate": "2021-07-07",
+        "latestRevision": "2021-07-14",
+        "arxivUrl": "https://arxiv.org/abs/2107.03374",
+        "primaryCategory": "cs.LG",
+        "abstractParaphrase": "Introduces the Codex code model and the HumanEval problem set, evaluating functional correctness of generated programs via unit tests and the pass@k metric rather than text similarity.",
+        "connectedSystem": "code-review-arena",
+        "connectedTopic": "code-generation or code-repair evaluation",
+        "whyItMatters": "Originates the pass@k functional-correctness metric and unit-test execution methodology that underpin how generated or repaired code is scored in a code arena.",
+        "verifiedViaApi": true,
+        "apiUrlUsed": "https://export.arxiv.org/api/query?id_list=2107.03374"
+      },
+      {
+        "title": "LiveCodeBench: Holistic and Contamination Free Evaluation of Large Language Models for Code",
+        "authors": [
+          "Naman Jain",
+          "King Han",
+          "Alex Gu",
+          "Wen-Ding Li",
+          "Fanjia Yan",
+          "Tianjun Zhang",
+          "Sida Wang",
+          "Armando Solar-Lezama",
+          "Koushik Sen",
+          "Ion Stoica"
+        ],
+        "arxivId": "2403.07974",
+        "submittedDate": "2024-03-12",
+        "latestRevision": "2024-06-06",
+        "arxivUrl": "https://arxiv.org/abs/2403.07974",
+        "primaryCategory": "cs.SE",
+        "abstractParaphrase": "Builds a continuously updated coding benchmark that collects problems released over time with known dates, enabling contamination-free evaluation by testing models only on problems published after their training cutoff, across tasks like generation, self-repair, and test prediction.",
+        "connectedSystem": "contamination-checker",
+        "connectedTopic": "benchmark contamination",
+        "whyItMatters": "Demonstrates a release-date-windowing strategy for avoiding train-test overlap that a contamination checker can apply to keep code evaluations untainted.",
+        "verifiedViaApi": true,
+        "apiUrlUsed": "https://export.arxiv.org/api/query?id_list=2403.07974"
+      },
+      {
+        "title": "Rethinking Benchmark and Contamination for Language Models with Rephrased Samples",
+        "authors": [
+          "Shuo Yang",
+          "Wei-Lin Chiang",
+          "Lianmin Zheng",
+          "Joseph E. Gonzalez",
+          "Ion Stoica"
+        ],
+        "arxivId": "2311.04850",
+        "submittedDate": "2023-11-08",
+        "latestRevision": "2023-11-11",
+        "arxivUrl": "https://arxiv.org/abs/2311.04850",
+        "primaryCategory": "cs.CL",
+        "abstractParaphrase": "Shows that paraphrased or translated copies of benchmark items can evade standard n-gram overlap contamination checks while still inflating scores, and proposes a stronger LLM-based detector to catch such rephrased contamination.",
+        "connectedSystem": "contamination-checker",
+        "connectedTopic": "benchmark contamination",
+        "whyItMatters": "Directly motivates detection logic for a contamination checker by exposing the limits of surface n-gram matching and offering a semantic-similarity detection alternative.",
+        "verifiedViaApi": true,
+        "apiUrlUsed": "https://export.arxiv.org/api/query?id_list=2311.04850"
+      },
+      {
+        "title": "Stop Uploading Test Data in Plain Text: Practical Strategies for Mitigating Data Contamination by Evaluation Benchmarks",
+        "authors": [
+          "Alon Jacovi",
+          "Avi Caciularu",
+          "Omer Goldman",
+          "Yoav Goldberg"
+        ],
+        "arxivId": "2305.10160",
+        "submittedDate": "2023-05-17",
+        "latestRevision": "2023-10-18",
+        "arxivUrl": "https://arxiv.org/abs/2305.10160",
+        "primaryCategory": "cs.CL",
+        "abstractParaphrase": "Argues that public plain-text test sets leak into training corpora and recommends practical mitigations such as encryption, holding out data, and gating access to reduce future benchmark contamination.",
+        "connectedSystem": "contamination-checker",
+        "connectedTopic": "benchmark contamination",
+        "whyItMatters": "Frames preventive practices (encryption, access control, canary strings) that a contamination checker and its data-handling policies can operationalize.",
+        "verifiedViaApi": true,
+        "apiUrlUsed": "https://export.arxiv.org/api/query?id_list=2305.10160"
+      },
+      {
+        "title": "Ragas: Automated Evaluation of Retrieval Augmented Generation",
+        "authors": [
+          "Shahul Es",
+          "Jithin James",
+          "Luis Espinosa-Anke",
+          "Steven Schockaert"
+        ],
+        "arxivId": "2309.15217",
+        "submittedDate": "2023-09-26",
+        "latestRevision": "2025-04-28",
+        "arxivUrl": "https://arxiv.org/abs/2309.15217",
+        "primaryCategory": "cs.CL",
+        "abstractParaphrase": "Proposes a reference-free framework that scores retrieval-augmented systems on dimensions like faithfulness, answer relevance, and context relevance using model-based judgments, allowing evaluation without hand-written ground truth.",
+        "connectedSystem": "General",
+        "connectedTopic": "retrieval evaluation",
+        "whyItMatters": "Supplies reference-free retrieval and grounding metrics that a general evaluation system can adopt to assess context quality and answer faithfulness in RAG pipelines.",
+        "verifiedViaApi": true,
+        "apiUrlUsed": "https://export.arxiv.org/api/query?id_list=2309.15217"
+      },
+      {
+        "title": "ToolLLM: Facilitating Large Language Models to Master 16000+ Real-world APIs",
+        "authors": [
+          "Yujia Qin",
+          "Shihao Liang",
+          "Yining Ye",
+          "Kunlun Zhu",
+          "Lan Yan",
+          "Yaxi Lu",
+          "Yankai Lin",
+          "Xin Cong",
+          "Xiangru Tang",
+          "Bill Qian",
+          "Sihan Zhao",
+          "Lauren Hong",
+          "Runchu Tian",
+          "Ruobing Xie",
+          "Jie Zhou",
+          "Mark Gerstein",
+          "Dahai Li",
+          "Zhiyuan Liu",
+          "Maosong Sun"
+        ],
+        "arxivId": "2307.16789",
+        "submittedDate": "2023-07-31",
+        "latestRevision": "2023-10-03",
+        "arxivUrl": "https://arxiv.org/abs/2307.16789",
+        "primaryCategory": "cs.AI",
+        "abstractParaphrase": "Presents instruction data and a training plus evaluation pipeline covering thousands of real REST APIs, including a multi-step solution-search method and an automatic evaluator for judging whether tool-calling trajectories complete tasks.",
+        "connectedSystem": "Helm-browser-agent",
+        "connectedTopic": "reliable tool use",
+        "whyItMatters": "Offers an automatic evaluator and large API-calling task set that a reliable-tool-use harness can reuse to measure correct tool selection and multi-step API execution.",
+        "verifiedViaApi": true,
+        "apiUrlUsed": "https://export.arxiv.org/api/query?id_list=2307.16789"
+      },
+      {
+        "title": "API-Bank: A Comprehensive Benchmark for Tool-Augmented LLMs",
+        "authors": [
+          "Minghao Li",
+          "Yingxiu Zhao",
+          "Bowen Yu",
+          "Feifan Song",
+          "Hangyu Li",
+          "Haiyang Yu",
+          "Zhoujun Li",
+          "Fei Huang",
+          "Yongbin Li"
+        ],
+        "arxivId": "2304.08244",
+        "submittedDate": "2023-04-14",
+        "latestRevision": "2023-10-25",
+        "arxivUrl": "https://arxiv.org/abs/2304.08244",
+        "primaryCategory": "cs.CL",
+        "abstractParaphrase": "Introduces a benchmark with executable API calls and graded dialogue scenarios that test whether a model can decide when to call a tool, retrieve the right API, and invoke it correctly, along with metrics for each capability.",
+        "connectedSystem": "Helm-browser-agent",
+        "connectedTopic": "reliable tool use",
+        "whyItMatters": "Provides per-step tool-use metrics (call decision, retrieval, correct invocation) that a reliable-tool-use evaluation can adopt to pinpoint where tool calls break down.",
+        "verifiedViaApi": true,
+        "apiUrlUsed": "https://export.arxiv.org/api/query?id_list=2304.08244"
+      }
+    ]
+  }
+}

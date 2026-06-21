@@ -1,0 +1,37 @@
+---
+title: Why browser agents need explicit state and recovery
+kind: System Brief
+summary: Helm reports a task done only when a validator can prove it from the visible page, and treats "unverified" and "blocked" as real, honest outcomes.
+date: 2026-06-09
+relatedSystem: helm-browser-agent
+authoredByHari: false
+draft: false
+---
+
+This is a system brief derived from the Helm Browser Agent repository and its documentation.
+
+## The failure mode: faked success
+
+A browser agent that marks a task done because a page loaded is confidently doing the wrong thing. The common failures are predictable, pasting the raw instruction into a search box, declaring victory on render, or emitting an action the underlying engine cannot execute. A faked completion is worse than an honest failure because it hides that nothing happened.
+
+## One pipeline, not a raw prompt
+
+Helm routes every instruction through a fixed, testable pipeline instead of handing a prompt to the browser:
+
+1. **Perceive**, a deterministic normalizer cleans the prompt and an intent planner builds a structured intent that separates command words from the content to act on, with an explicit success condition.
+2. **Decide**, a deterministic planner handles high-confidence routes; only when none applies does the model choose the single next action, validated against a central registry of actions the engine can actually run.
+3. **Act**, the action executes via Playwright, and the resulting page state is observed.
+4. **Verify**, evidence-based validators gate completion from the visible page.
+5. **Recover**, a loop detector triggers recovery, feeding the last failure into the next step within a step budget.
+
+## Honest terminal states
+
+Completion is not the only acceptable ending. A run is `completed` only with visible-page proof; otherwise it ends `unverified` or returns a typed `blocked` (login required, captcha, page not found, …) with a suggested next step. The agent is allowed to say "I could not prove this."
+
+## Bounds and safety
+
+High-impact actions, purchases, checkout, sending messages, submitting forms, account changes, pause for explicit confirmation. Every navigation passes an SSRF guard that blocks non-http(s) schemes, private and loopback addresses, and cloud-metadata endpoints, because the agent picks URLs from untrusted page text. Resilience comes from a provider cascade (Groq → Gemini → local Ollama) that short-circuits on quota errors.
+
+The repository does not measure live-site success rates, so none is claimed. The claim is structural: when Helm says done, a validator proved it.
+
+See the [Helm Browser Agent case study](/systems/helm-browser-agent) for the architecture and evidence.

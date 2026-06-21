@@ -1,0 +1,35 @@
+---
+title: DebugBrief 1.3.0
+kind: Release Note
+summary: The third public release of DebugBrief on PyPI, evidence-only debugging briefs for pull requests, handoffs, and incidents.
+date: 2026-06-17
+relatedSystem: debugbrief
+authoredByHari: false
+draft: false
+---
+
+This is a release summary derived from the DebugBrief changelog and PyPI release metadata.
+
+DebugBrief is live on PyPI at version **1.3.0**, the latest of three public releases in the v1.x line (v1.1.0, v1.2.0, v1.3.0).
+
+## Install
+
+```bash
+pipx install debugbrief
+# or
+uv tool install debugbrief
+```
+
+DebugBrief needs Python 3.9 or newer and uses native `git` when available. The project you debug does not need to be Python.
+
+## What it does
+
+Record the commands you run and the notes you write while debugging, then build an evidence-only Markdown report for a PR, a handoff, or an incident, derived strictly from what actually happened. No AI, no network, no telemetry.
+
+## Verified at release
+
+- **376** test functions across **29** files.
+- CI matrix across **Python 3.9 through 3.14** on Linux and macOS.
+- Release automation publishes to PyPI only when the tag matches the package version.
+
+See the [DebugBrief case study](/systems/debugbrief) and the [project on PyPI](https://pypi.org/project/debugbrief/).
