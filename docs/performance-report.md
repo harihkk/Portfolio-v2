@@ -6,11 +6,11 @@ Companion to [performance-budget.md](performance-budget.md). Measured from the p
 
 39 routes. All content routes are **static** (`○`) or **SSG** (`●`), prerendered HTML, except `/api/contact` (dynamic by necessity). This means HTML is served instantly and the site is fully usable without JavaScript.
 
-| Route class | Count | Rendering |
-|---|---|---|
-| Static | most pages | prerendered at build |
-| SSG (generateStaticParams) | `/systems/[slug]` ×4, `/research/[slug]` ×14, `/notes/[slug]` ×5 | prerendered HTML |
-| Dynamic | `/api/contact` | server route on demand |
+| Route class                | Count                                                            | Rendering              |
+| -------------------------- | ---------------------------------------------------------------- | ---------------------- |
+| Static                     | most pages                                                       | prerendered at build   |
+| SSG (generateStaticParams) | `/systems/[slug]` ×4, `/research/[slug]` ×14, `/notes/[slug]` ×5 | prerendered HTML       |
+| Dynamic                    | `/api/contact`                                                   | server route on demand |
 
 ## Why it should meet the budget (LCP <2.5s, CLS <0.1, INP <200ms)
 

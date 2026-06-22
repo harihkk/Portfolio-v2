@@ -1,275 +1,300 @@
-# Implementation Plan
+# Implementation Plan (hardening)
 
-Phased build plan for **The Systems Journal**, Hari Kancharla's editorial engineering portfolio, grounded in the verified audit of 2026-06-21.
+Hardening pass for **The Systems Journal**, Hari Kancharla's editorial engineering portfolio (Portfolio-v2). This plan covers the work on branch `motion-content-demo-hardening`. It builds on the original phased build (see the prior `implementation-plan` history) and on the 2026-06-21 re-audit, which confirmed that all four flagship source repositories match their researched revisions with no drift.
 
----
-
-## Overview
-
-| Field | Value |
-| --- | --- |
-| Project | The Systems Journal (portfolio v2) |
-| Subject | Hari Krishna Kancharla (masthead: "Hari Kancharla"), AI Systems Engineer, Boston, MA |
-| Tagline | "Building AI systems that have to prove they work." |
-| Stack | Next.js 16 App Router · React 19 · TypeScript (strict) · Tailwind v4 · GSAP |
-| Palette | Paper `#F2EEE5` · Ink `#151412` · Signal `#E34A2F` |
-| Type | Newsreader (serif) · Manrope (sans) · IBM Plex Mono (mono) |
-| Hard constraints | No photo · no video · no fabricated social/awards/publications · no physics game · no dark-only hacker theme |
-| Source of truth | Canonical verified facts + `docs/audit/raw-audit-2026-06-21.json` |
-
-The plan runs in six phases. Phase 1 (Audit) is complete; the remaining phases build forward from its findings. Every metric, name, date, and claim in the built site must trace to the audit JSON or the canonical facts, anything else is blocked pending user approval (see [Blocked / Needs User Input](#blocked--needs-user-input)).
+This document is honest about scope. It marks what this pass completes and what it explicitly defers, with reasons, so the deferred work is tracked rather than silently dropped.
 
 ---
 
-## Phase 1, Audit (DONE)
+## Context
 
-**Status: Complete.** Summary of what was produced and verified, captured in `docs/audit/raw-audit-2026-06-21.json`.
+| Field             | Value                                                                                                    |
+| ----------------- | -------------------------------------------------------------------------------------------------------- |
+| Branch            | `motion-content-demo-hardening`                                                                          |
+| Portfolio-v2 HEAD | `6ad90b2e73f770005ab41a112db0ecdbdab74825`                                                               |
+| Stack             | Next.js 16 App Router, React 19, TypeScript (strict), Tailwind v4, GSAP                                  |
+| Subject           | Hari Krishna Kancharla (masthead: "Hari Kancharla"), AI Systems Engineer, Boston, MA                     |
+| Hard rule         | No em dashes anywhere in tracked content. Use periods, commas, colons, parentheses, or ordinary hyphens. |
+| Source of truth   | Committed artifacts in the four flagship repos, read at the pinned SHAs below.                           |
 
-### What was done
-- **Flagship repos audited and verified** (four systems): architecture, execution flow, test counts, CI, packaging, and limitations were extracted directly from source.
-  - **Code Review Arena** (`harihkk/code-review-arena`), 306 test functions / 37 files; 30 benchmark cases (3 packs × 10); 5-job CI; Python 3.11+; v0.1.0; MIT; **not** published to a registry.
-  - **Helm Browser Agent** (`harihkk/Helm-browser-agent`, product "Helm"), 192 test functions / 16 files (40 SSRF tests); Groq → Gemini → Ollama cascade; SSRF guard; v0.2; MIT per README; **not** packaged.
-  - **DebugBrief** (`harihkk/Debug-Brief`, product "DebugBrief"), 376 test functions / 29 files; CI matrix Linux + macOS × Python 3.9-3.14; **published on PyPI** as `debugbrief` v1.3.0 (releases v1.1.0-v1.3.0); MIT.
-  - **ContamCheckr** (`harihkk/contamination-checker`), 30 test functions / 7 files; caveated evidence score (low/moderate/high bands), not a binary verdict; **no CI**; **not on PyPI** (confirmed 404); v0.1.0; MIT.
-- **Earlier work catalogued and triaged**: Prompt-Budd (live at https://promtbud.com/, 200 OK, strongest secondary), AskRC (historical/academic, last work Dec 2024), GenBI (API-only prototype), Visioncraft (ambitious, boilerplate README, Feb 2025), self-healing-pipeline (prototype; unverified "85%+/production-grade" claims to be dropped), weather-dashboard (omit / lowest prominence). Forks (`langgraph`, `litellm`, `MLOps`) excluded.
-- **Old portfolio inspected**: `harihkk.github.io` source is effectively empty (single 1-byte README; no recoverable stack, design, or copy). The only surviving voice artifact is the GitHub bio.
-- **Content conflicts logged** (old site vs resume): Surf → Helm rename; stale clone URL; Helm license discrepancy; Infinite Infolab title; unconfirmed KL University / Rlogical entries; ContamCheckr-not-on-PyPI; old dark "chaos-mode" theme not carried forward. See [Conflict Log](#content-conflict-log).
-- **Reference benchmark mapped**: `shivanshgupta.com` analysed as a quality benchmark only; a section-by-section parity mapping and an explicit do-not-copy caution list were recorded (audit JSON `reference`).
-- **Research surfaced**: 15 arXiv papers verified via the arXiv API, each tied to a flagship system or topic, the basis for the external Research Desk.
+### Pinned source revisions (re-audit 2026-06-21, no drift)
 
-### Deliverables
-- `docs/audit/raw-audit-2026-06-21.json` (verified facts; the downstream source of truth).
-- This implementation plan.
+| Repo                     | SHA                                        |
+| ------------------------ | ------------------------------------------ |
+| Portfolio-v2 (this site) | `6ad90b2e73f770005ab41a112db0ecdbdab74825` |
+| code-review-arena        | `656b40187cb14321c2734bbec23e44c6e47131db` |
+| Helm-browser-agent       | `784af0a7998b90898a7d4bd4d11ee0ac62ace3db` |
+| Debug-Brief              | `d5c1df6f4263f25c4142fd5e93c511b1cfed78bd` |
+| contamination-checker    | `fbbc85ebab0515f8431d042a2740f8db22c4ee01` |
 
-### Exit criteria (met)
-- Every flagship fact traceable to source. ✅
-- Conflicts logged, not silently resolved. ✅
-- Reference parity mapping and copy/asset cautions recorded. ✅
+Demo fixtures shown on the site are derived from files committed to these repos at these exact SHAs. They are read from committed artifacts, not regenerated at request time and not invented.
 
 ---
 
-## Phase 2, Foundation
+## Phases at a glance
 
-**Goal:** Stand up a strict, reproducible Next.js 16 project skeleton with the design system encoded as tokens, plus the content layer that will feed every section.
+| #   | Phase                                             | Status                                                           |
+| --- | ------------------------------------------------- | ---------------------------------------------------------------- |
+| 0   | Audit (re-audit and drift check)                  | Done                                                             |
+| 1   | Copy gate (em-dash ban)                           | This pass                                                        |
+| 2   | Balanced grid                                     | This pass                                                        |
+| 3   | Fail-open and transform-only motion hot paths     | This pass                                                        |
+| 4   | Content rewrite to first person, simpler headings | This pass                                                        |
+| 5   | Demo accuracy from committed fixtures             | This pass                                                        |
+| 6   | Social channel config                             | This pass                                                        |
+| 7   | Route curtain                                     | This pass                                                        |
+| 8   | Verification                                      | This pass (local gates), partly deferred (browser-runtime gates) |
 
-### Tasks
-- Initialize Next.js 16 (App Router) + React 19 + TypeScript in `strict` mode.
-- Configure Tailwind v4 with design tokens: paper `#F2EEE5`, ink `#151412`, signal `#E34A2F`; hairline border tokens; type scale via `clamp()`.
-- Wire fonts: Newsreader (serif display/body), Manrope (sans), IBM Plex Mono (mono) via `next/font`.
-- Establish a typed content layer (TypeScript modules or MDX with typed frontmatter) for: flagship systems, earlier work, professional record, metrics, research desk, milestones. Source all content from the audit JSON / canonical facts.
-- Set up linting (ESLint + Tailwind plugin), Prettier, and `tsc --noEmit` typecheck.
-- Configure the test runner (unit) and a Playwright project (e2e), scaffolded now, exercised in Phases 5-6.
-- Add the npm scripts (see [Quality Gates & Scripts](#quality-gates--npm-scripts)).
-- Add base accessibility scaffolding (semantic landmarks, skip link, focus-visible styles).
+---
 
-### Deliverables
-- Buildable, type-clean skeleton with tokens and fonts.
-- Typed content models with placeholder-free seed data drawn from the audit.
-- Project-wide lint/format/typecheck configuration.
+## Phase 0, Audit (DONE)
+
+**Status: complete.** The re-audit on 2026-06-21 used `git ls-remote` against each public repo to read the latest published HEAD, then a shallow clone to inspect committed artifacts. Result: all five revisions match the researched revisions exactly, no drift. Recorded in `docs/source-revisions.md`.
+
+Key committed artifacts that ground the site:
+
+| Flagship              | Committed artifact(s)                                    |
+| --------------------- | -------------------------------------------------------- |
+| code-review-arena     | `dashboard/public/reports/audit-v1.json`                 |
+| Helm-browser-agent    | `core/action_registry.py`                                |
+| Debug-Brief           | `examples/sample-pr.md`, `docs/demo.tape`                |
+| contamination-checker | `experiments/results/*.json`, `docs/example_report.json` |
+
+---
+
+## Phase 1, Copy gate (em-dash ban)
+
+**Goal:** make the no-em-dash rule a build-enforced gate, not a convention.
+
+### What this pass completes
+
+- Ship `scripts/check-copy.mjs` as a pure-detector plus CLI. It walks `app`, `components`, `content`, `lib`, `public`, `scripts` over the relevant extensions and fails on the em dash (U+2014) and its HTML entities (`&mdash;`, `&#8212;`, `&#x2014;`).
+- Wire `npm run check:copy` into the aggregate `npm run verify` chain, ahead of lint and typecheck, so a banned character fails the build.
+- Cover the detector with a unit test (the `scanText` export is imported by `tests/unit`).
 
 ### Exit criteria
-- `npm run lint`, `npm run typecheck`, and `npm run build` all pass on an empty-but-structured app.
-- Design tokens render correctly in light editorial palette; no dark-only theme.
-- Content schema compiles and rejects unknown fields.
+
+- `npm run check:copy` passes and reports the file count scanned.
+- The gate is part of `verify` and blocks release on any violation.
 
 ---
 
-## Phase 3, Static Editorial Build
+## Phase 2, Balanced grid
 
-**Goal:** Build every section as static, content-complete, accessible markup, the full "issue" of The Systems Journal with no motion yet. This is where the parity mapping is realised, in our own copy and components.
+**Goal:** even out the section and card layouts so dense and exhale regions read as a deliberate editorial rhythm rather than ragged blocks.
 
-### Sections (mapped from the reference parity table; original copy and components only)
+### What this pass completes
 
-| Systems Journal section | Role | Content source |
-| --- | --- | --- |
-| **Masthead + Nav** | Institutional nameplate: "The Systems Journal" wordmark, Vol./No./Issue line, "Est." + live date, hairline rules | Original; date stamp generated |
-| **Engineering thesis (Lead Story)** | One front-page lede stating Hari's engineering thesis | Tagline + canonical identity |
-| **Interactive systems plate (hero)** | Oversized name + an interactive system/architecture visualization, **NO photo** | Flagship architecture (audit) |
-| **Verified metrics (by-the-numbers)** | Scannable box score; every number verified with provenance | See note below |
-| **Systems Journal index** | Table-of-contents / engineering-frontiers taxonomy | Original domains |
-| **Professional engineering record** | Employers, scope, ownership grid | Resume (canonical) |
-| **Evaluation / benchmark record** | Results against named benchmarks, archival register | Flagship benchmark facts (audit) |
-| **Research Desk** | EXTERNAL papers Hari engages with, explicitly **not** authored by Hari | 15 verified arXiv papers (audit) |
-| **Flagship systems + archive** | Deep case studies (4 flagships) + lighter archive of smaller builds | Audit flagships + earlier work |
-| **Releases / packages / CI / artifacts** | Engineering social proof grid | Audit packaging/CI facts |
-| **Interactive demonstrations** | Live playgrounds / system walkthroughs | Built artifacts only |
-| **Verified milestones** | Shipped-at-scale moments, acceptances, with provenance | Audit + resume |
-| **Build artifacts gallery** | Architecture diagrams, dashboards (no personal photos) | Self-produced imagery |
-| **Notes / Substack** | Newsletter/notes, **only if real content exists** | Blocked (see below) |
-| **Open channel (Contact)** | Closing CTA / colophon | Canonical contact |
-
-### Per-system case-study content (verified)
-
-| System | One-liner basis | Verified facts to surface | License | Distribution |
-| --- | --- | --- | --- | --- |
-| Code Review Arena | Execution-backed code-review benchmark; scores detection separately from validated repair | 306 tests / 37 files; 30 cases (3×10); 5-job CI; Python 3.11+ | MIT | Not on a registry (v0.1.0), state as such |
-| Helm | Bounded perceive→decide→act browser runtime; completion only on visible-page evidence | 192 tests / 16 files (40 SSRF); Groq→Gemini→Ollama cascade; SSRF guard; v0.2 | MIT per README (flag for confirmation) | Not packaged; link real repo `harihkk/Helm-browser-agent` (clone URL in README is stale) |
-| DebugBrief | Local-first, AI-free CLI turning a debugging session into an evidence-only Markdown brief | 376 tests / 29 files; CI Linux+macOS × Py 3.9-3.14 | MIT | **Published on PyPI** `debugbrief` v1.3.0 |
-| ContamCheckr | Local CPU-friendly auditor producing a caveated evidence score (low/moderate/high), not a binary verdict | 30 tests / 7 files; no CI; v0.1.0 | MIT | **Not on PyPI** (404), never imply otherwise |
-
-### Tasks
-- Build all sections above as server components with semantic, accessible HTML.
-- Render flagship case studies, earlier-work archive (Prompt-Budd highest, weather-dashboard omitted/lowest), and the external Research Desk.
-- Implement the masthead conceit (Vol./No./Est./live date) consistently.
-- Hero = interactive systems plate placeholder component (static render now; interaction in Phase 4).
-- GitHub bio refined for voice: source line "i run on coffee. the code barely runs.", refine, do not invent new voice.
-- Ensure NO photo, NO video, NO fabricated social/awards/publications anywhere.
-
-### Deliverables
-- Content-complete static site, all sections present, all copy original.
-- Provenance notes attached to every metric and claim.
+- Normalize the metric and card grids (`components/editorial/MetricGrid.tsx`, the systems and archive grids) so columns balance across breakpoints and hairline rules align.
+- Keep the near-monochrome editorial palette (paper, ink, signal) and the masthead conceit intact; this is layout balancing, not a redesign.
 
 ### Exit criteria
-- All sections render with verified content; zero placeholder/lorem text.
-- No fabricated data; no copied copy/assets from the reference (independently reimplemented).
-- Passes axe/manual a11y checks on static markup; lint + typecheck + build green.
 
-> **Verified-metrics note:** Employer metrics (Morgan Stanley and Infinite Infolab figures) come from Hari's own public resume and are therefore "approved via resume", their numbers must never be altered. However, **public display** of these employer metrics on the live site is approval-gated (see [Blocked](#blocked--needs-user-input)). System metrics (test counts, case counts, CI jobs) are audit-verified and display-ready, though headline benchmark gap figures (e.g. Code Review Arena's detection-vs-validation numbers) must be re-derived from a fresh run before publishing.
+- Grids align on the hairline system at the supported breakpoints with no orphaned single-item rows where a balanced layout is possible.
+- No layout shift introduced; build and typecheck stay green.
 
 ---
 
-## Phase 4, Motion
+## Phase 3, Fail-open and transform-only motion hot paths
 
-**Goal:** Add subtle, single-purpose GSAP motion that reinforces the "turning the page" editorial metaphor, never gimmicky.
+**Goal:** motion must never hide content and must stay cheap on the main thread.
 
-### Tasks
-- Scroll-triggered count-up on the verified-metrics box score (numbers animate to their verified values).
-- Section-heading entrance transitions (opacity + small translate/scale) revealed on scroll behind hairline rules.
-- Interactive hero systems plate: live diagram/canvas of an architecture or data flow (the visual proof is a system, not a face).
-- Respect `prefers-reduced-motion`: all entrance/count-up animations degrade to instant final state.
-- Keep motion subtle, single-purpose, and consistent with the masthead conceit; no physics sandbox, no chaos-mode theme.
+### What this pass completes
 
-### Deliverables
-- GSAP-driven scroll reveals and count-ups wired to verified data.
-- Reduced-motion fallbacks.
+- **Fail-open reveals.** The reveal wrapper carries `data-reveal` and its hidden start state is armed by an inline script before paint, so when JavaScript is off or motion is reduced, content is fully visible (no flash, no trapped-hidden content). See `components/motion/Reveal.tsx` and `components/motion/MotionProvider.tsx`.
+- **Reduced-motion honored everywhere.** `prefersReducedMotion()` in `lib/motion.ts` short-circuits reveals, the opening sequence, count-ups, and the route template to their final state.
+- **Transform-only hot paths.** Scroll-triggered reveals and the route transition animate opacity and transform (translate/scale) only, avoiding layout-affecting properties on the animation hot path. `ScrollTrigger` is refreshed after fonts settle so trigger positions stay correct.
+
+### What is deferred (and why)
+
+| Deferred                                                             | Reason                                                                                                                                                                                                          |
+| -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Full Execution Trace sticky storytelling                             | Larger interaction design effort; the current reveal and count-up motion is sufficient and stable for this pass. Scoped out to keep the hardening pass focused on correctness rather than new narrative motion. |
+| Motion visual baselines (screenshot regression for animation states) | Requires a stable browser-runtime baseline and review of acceptable diffs; not run in this environment. Deferred to a machine with a browser runtime.                                                           |
+| Full performance recording (frame-by-frame profiling of motion)      | Requires a real device and profiler; not reproducible here. Deferred.                                                                                                                                           |
 
 ### Exit criteria
-- Motion runs at 60fps on a mid-range device; no layout shift from animations.
-- `prefers-reduced-motion: reduce` fully honored.
-- Count-up targets read from verified metric values, not hardcoded reference figures.
+
+- With `prefers-reduced-motion: reduce`, the opening sequence is skipped and content shows immediately (covered by `e2e/interactions.spec.ts`).
+- No reveal can leave content permanently hidden when JS is disabled.
 
 ---
 
-## Phase 5, Integrations
+## Phase 4, Content rewrite to first person, simpler headings
 
-**Goal:** Wire live data sources with graceful, deterministic fallbacks so the site is never blank or wrong if a source is down.
+**Goal:** tighten the voice to first person and simplify headings, without inventing facts.
 
-### GitHub
-- Pull repo metadata (stars, last commit, release tags) for the four flagships + Prompt-Budd from the GitHub API.
-- **Fallback:** statically cached values from the audit JSON if the API fails or rate-limits.
-- Link the **real** Helm repo (`harihkk/Helm-browser-agent`); ignore the stale `Helm-agentic-browser.git` clone URL in the README.
+### What this pass completes
 
-### PyPI / releases
-- Surface DebugBrief's PyPI presence (`debugbrief` v1.3.0) in the Releases/packages grid.
-- ContamCheckr, Code Review Arena, and Helm are **not** distributed on a registry, present them as source/CI artifacts only; never imply a PyPI listing for ContamCheckr.
-
-### arXiv (Research Desk)
-- Render the 15 verified papers from the audit as the external reading desk, clearly framed as papers Hari engages with, **not** authored by Hari.
-- Optionally refresh metadata via the arXiv API; **fallback:** the verified audit snapshot (already API-verified).
-
-### Substack (Notes / Newsletter)
-- **Could not verify:** no Substack/newsletter URL is in the audit or canonical facts. Section is **optional** and stays hidden until a real feed is supplied. Do not invent a feed. (See [Blocked](#blocked--needs-user-input).)
-
-### Contact (Open channel)
-- Publish email `harikrishnak2426@zohomail.com` and GitHub `github.com/harihkk`.
-- **Never publish the phone number** (it exists on the resume but is not for publication).
-- LinkedIn URL is **not known**, do not invent one; render only when supplied.
-- If a contact form is built, its email-provider keys are **blocked** pending user input; until then, use a `mailto:` link as the no-key fallback.
-
-### Deliverables
-- Live integrations with cached fallbacks for GitHub, PyPI, arXiv.
-- Contact channel with safe defaults; newsletter gated behind real content.
+- Rewrite prose to first person where the third-person framing read stiff, keeping every metric, name, date, and claim traceable to the committed artifacts and canonical facts.
+- Simplify section headings to plain noun phrases.
+- Keep the ownership distinction sharp: the Research Desk surfaces external papers Hari engages with, not papers authored by Hari. External arXiv papers are never presented as Hari's publications.
+- All rewritten copy passes the Phase 1 copy gate (no em dashes).
 
 ### Exit criteria
-- Every integration degrades to a verified static fallback with no error state visible to users.
-- No unpublished/unverified link is ever rendered (LinkedIn, Substack, phone).
-- Contact renders correctly with or without provider keys.
+
+- No fabricated facts introduced; counts and statuses still match the provenance ledger.
+- Copy gate, lint, and typecheck stay green.
 
 ---
 
-## Phase 6, Verification (Quality Gates)
+## Phase 5, Demo accuracy from committed fixtures
 
-**Goal:** Prove the site meets correctness, accessibility, performance, and content-integrity bars before ship.
+**Goal:** every interactive demo reflects the committed artifacts exactly, including the executable-vs-planner distinction.
 
-### Tasks
-- Run the full local gate suite (lint, typecheck, unit tests, build).
-- Run Playwright e2e across the critical paths (nav, section rendering, integration fallbacks).
-- Run Lighthouse (performance, a11y, best-practices, SEO) and cross-browser checks.
-- Content-integrity pass: confirm no fabricated metrics/publications/awards/social; confirm phone number absent; confirm ContamCheckr not implied on PyPI; confirm Research Desk papers are framed as external.
-- Confirm SEO name "Hari Krishna Kancharla" and masthead "Hari Kancharla" are both present and correct.
+### Per-flagship accuracy targets
 
-### Deliverables
-- Green local gate run.
-- Documented e2e / Lighthouse / cross-browser results (or run-instructions where not executable, see note).
+**Code Review Arena** (from `dashboard/public/reports/audit-v1.json`, generated 2026-06-18, 10 cases):
+
+| Case                    | detection | validated | apply | tests   | structural | primary failure    |
+| ----------------------- | --------- | --------- | ----- | ------- | ---------- | ------------------ |
+| reference-patch         | 1.000     | 1.000     | 1.000 | 1.000   | 1.000      | none               |
+| control:perfect_patch   | 1.000     | 1.000     | 1.000 | 1.000   | 1.000      | none               |
+| control:keyword_gamer   | 1.000     | 0.000     | 1.000 | 0.000   | 0.000      | tests_failed       |
+| control:bad_patch       | 1.000     | 0.000     | 1.000 | 0.000   | 0.000      | tests_failed       |
+| control:malformed_patch | 1.000     | 0.000     | 0.000 | not run | not run    | patch_apply_failed |
+
+Aggregate failure modes: tests_failed 30, structural_validation_failed 30, patch_apply_failed 10. Case studies include `security_fastapi_multitenant_admin_bypass_001`. The demo must score detection separately from validated repair, so a "names the bug but the patch fails tests" case reads as detection 1.000 and validated 0.000.
+
+**Helm Browser Agent** (from `core/action_registry.py`):
+
+This is the most important accuracy fix in the pass. The engine actions and the planner concepts must not be conflated.
+
+| Class                                                | Members                                                                                                                                                                                      |
+| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Executable engine actions                            | `navigate`, `click`, `type`, `press_key`, `select`, `scroll`, `wait`, `extract`, `done`, plus higher-level executable workflows such as `open_top_github_repo` and `add_amazon_item_to_cart` |
+| Non-executable planner concepts (`executable=False`) | `search_web`, `site_search`, `observe_page`, `extract_text`, `select_option`, `wait_for_selector`, `validate_url`, `validate_text_visible`, `report_blocker`, `recover_from_error_page`      |
+
+Action statuses: `pending`, `executing`, `completed`, `failed`, `cancelled`, `blocked`, `unverified`.
+
+Required corrections:
+
+- Do not present `search` or `read_text` (the planner concepts `search_web` / `extract_text`) as executable engine actions. The current `HelmDemo` uses `search` and `read_text` as if they were engine actions; these must be reframed as planner concepts or replaced with the real executable actions (for example `navigate`, `type`, `extract`).
+- The clone URL in the Helm README is stale. The real repository is `github.com/harihkk/Helm-browser-agent`. Link the real repo only.
+
+**DebugBrief** (from `examples/sample-pr.md`):
+
+- Command `python -m pytest -q test_calc.py`, exit 1 then exit 0 after editing `calc.py`, across 2 attempts. The file `calc.py` changed (correlation, not proven cause).
+- Sections present: Summary, Session metadata, Reproduce and verify, Red to green, Modified files, Timeline, Verification and tests, Failed attempts.
+- The brief involves no AI, no network access, and no inferred root cause. The demo must not imply any of those.
+
+**ContamCheckr** (from `experiments/results/*.json` and `docs/example_report.json`). Method weights: guided 0.5, Min-K%++ 0.3, order 0.2, renormalized over the active methods.
+
+| Scenario | Report                     | Index  | Band              | CI              | guided | minkpp      | order | Notes                                                   |
+| -------- | -------------------------- | ------ | ----------------- | --------------- | ------ | ----------- | ----- | ------------------------------------------------------- |
+| A        | contaminated_on_leak       | 0.492  | moderate evidence | [0.354, 0.492]  | 0.0    | 1.0         | 0.962 | minkpp AUC 1.0, order p 0.038, 40 examples, 40 controls |
+| B        | contaminated_on_clean      | 0.0077 | low evidence      | [0, 0.103]      | 0      | 0           | 0.038 |                                                         |
+| C        | base_on_leak               | 0.131  | low evidence      | [0.0077, 0.170] | 0      | 0           | 0.654 |                                                         |
+| D        | example_report.json (GLUE) | 0.2747 | moderate evidence | [0, 0.2747]     | n/a    | unavailable | n/a   | 10 examples, Min-K%++ unavailable (no matched control)  |
+
+The output is a caveated evidence score with low/moderate/high bands and a confidence interval, not a binary verdict. Scenario D must show Min-K%++ as unavailable because there is no matched control.
+
+### What is deferred (and why)
+
+| Deferred                                                                     | Reason                                                                                                                                                                                                                                    |
+| ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Full demo state-machine (formal, exhaustive states and transitions per demo) | The demos are code-split, fixture-backed walkthroughs with a reset control. A formal state machine is a larger rework that is not needed for fixture accuracy in this pass. Deferred.                                                     |
+| Exhaustive Playwright matrix per demo                                        | This pass covers the critical interactions (reset control present, keyboard-operable controls, reduced-motion path). Full per-demo, per-state Playwright coverage is deferred to keep the pass scoped to accuracy and the critical paths. |
 
 ### Exit criteria
-- All gates in the table below pass (or are documented as run-instructions with a clear owner).
-- Content-integrity checklist fully satisfied.
 
-> **Browser-runtime note:** Playwright e2e, Lighthouse, and cross-browser testing require a browser runtime. If this environment lacks one, these gates are documented as **run-instructions** (commands + expected thresholds) rather than executed here, and must be run on a machine with a browser before release.
-
----
-
-## Quality Gates & npm Scripts
-
-### Gate list
-
-| Gate | Tool | Blocks release? | Executable here? |
-| --- | --- | --- | --- |
-| Lint | ESLint + Tailwind plugin + Prettier check | Yes | Yes |
-| Typecheck | `tsc --noEmit` (strict) | Yes | Yes |
-| Unit tests | test runner | Yes | Yes |
-| Build | `next build` | Yes | Yes |
-| E2E | Playwright | Yes | Browser runtime required, else run-instructions |
-| Performance / a11y | Lighthouse | Yes | Browser runtime required, else run-instructions |
-| Cross-browser | Playwright/manual | Yes | Browser runtime required, else run-instructions |
-| Content integrity | Manual checklist | Yes | Yes |
-| Reduced-motion | Manual / automated check | Yes | Yes |
-
-### npm scripts
-
-| Script | Purpose |
-| --- | --- |
-| `npm run lint` | ESLint + Prettier + Tailwind lint |
-| `npm run typecheck` | `tsc --noEmit` under strict mode |
-| `npm run test` | Unit test suite |
-| `npm run test:e2e` | Playwright end-to-end suite |
-| `npm run build` | Production `next build` |
-| `npm run verify` | Aggregate gate: lint → typecheck → test → build (+ e2e where a browser runtime is available) |
+- Each demo's surfaced numbers, bands, statuses, and action vocabulary match the committed fixtures in the tables above.
+- Helm planner concepts are no longer presented as engine actions; only the real Helm repo is linked.
+- Demos expose a reset control and remain keyboard operable (covered by `e2e/interactions.spec.ts`).
 
 ---
 
-## Content Conflict Log
+## Phase 6, Social channel config
 
-Conflicts surfaced in the audit. Logged, never silently resolved.
+**Goal:** render only verified, configured channels. Never invent a link, never leak the phone number.
 
-| # | Conflict | Resolution / status |
-| --- | --- | --- |
-| 1 | Helm was "Surf" on the old site | Use **Helm Browser Agent**; link real repo `harihkk/Helm-browser-agent`. README clone URL `Helm-agentic-browser.git` is **stale**, do not use. |
-| 2 | Helm license: GitHub API reported none; README states MIT | Treat as **MIT per README/author**; flag for confirmation. |
-| 3 | Infinite Infolab title: old site "Software Engineer, Machine Learning" vs resume "Machine Learning Engineer" | **Resume wins** → Machine Learning Engineer. |
-| 4 | Old site listed KL University (Research Assistant) and Rlogical Techsoft (Research Intern), not on resume | **Do not publish** as professional experience without Hari's approval. Northeastern confirmed via git email; KL University undergrad details unconfirmed. |
-| 5 | ContamCheckr not on PyPI (only DebugBrief is) | **Never imply** ContamCheckr is on PyPI. |
-| 6 | Old site had dark "chaos-mode" theme + physics/sandbox canvas | **Intentionally not carried** into v2 (brief forbids physics game / dark-only hacker theme as the primary experience). |
+### What this pass completes
 
----
+- Contact channels live in one place (`lib/site.ts`). Email and GitHub are published; the resume PDF is linked.
+- LinkedIn renders only when a real URL is supplied. It is empty by default and hidden from the UI until set; no invented URL.
+- Substack is surfaced only when `NEXT_PUBLIC_SUBSTACK_URL` is configured; hidden otherwise.
+- The phone number exists on the resume but is intentionally omitted from this file entirely so it cannot leak through the bundle.
+- Any channel with an empty `href` is treated as not configured and is not rendered broken.
 
-## Blocked / Needs User Input
+### Exit criteria
 
-The following are required to complete the site and **cannot be guessed**. Each is flagged where it surfaces above.
-
-| Item | Status | Needed for |
-| --- | --- | --- |
-| **LinkedIn URL** | **Needs user approval**, not known; do not invent | Contact / open channel |
-| **Substack / newsletter URL** | **Could not verify**, no feed in audit or canonical facts; section hidden until supplied | Notes / Newsletter section |
-| **Contact email provider keys** | **Needs user input**, required only if a server-side contact form is built; `mailto:` fallback used otherwise | Contact form (optional) |
-| **Employer-metric public-display approval** | **Needs user approval**, Morgan Stanley & Infinite Infolab resume metrics are sourced/approved-via-resume, but public display on the live site must be approved; numbers must never be altered | Verified-metrics box score |
-| **KL University / undergrad details** | **Could not verify**, degree, dates, and role unconfirmed; not on current resume | Education / professional record (do not publish without approval) |
-| **Helm license confirmation** | **Needs user approval**, MIT assumed per README; GitHub API reported none | Helm case study license line |
-| **Headline benchmark figures (e.g. Code Review Arena detection-vs-validation gap)** | **Needs re-derivation** from a fresh run before publishing | Evaluation / benchmark record |
+- No unverified or unconfigured link is ever rendered (LinkedIn, Substack).
+- The phone number appears nowhere in the build output.
 
 ---
 
-## Reference Discipline
+## Phase 7, Route curtain
 
-`shivanshgupta.com` is a **quality benchmark only**. Borrow the *rhythm*, typographic hierarchy, hairline section rules, dense-vs-exhale pacing, subtle scroll-reveal + count-up motion, near-monochrome editorial palette, and the masthead (Vol./No./Est./live-date) conceit. **Never** copy its code, Tailwind class strings, `clamp()` values, color/border token names, reveal keyframes, component structure, copy, assets, data/figures, or credentials. Crucially: their Publications are self-authored, but **our Research Desk surfaces EXTERNAL papers**, keep that ownership distinction sharp to avoid implying false authorship.
+**Goal:** a subtle page-transition curtain on client navigations that never blocks content or first paint.
+
+### What this pass completes
+
+- The route template (`app/template.tsx`) skips the very first paint to avoid an initial-load flicker, then animates only on subsequent client navigations with a short opacity-and-translate transition.
+- Under reduced motion, the transition collapses to the final state immediately.
+- Pairs with the first-session-only opening sequence (`components/motion/OpeningSequence.tsx`), which only mounts after hydration so no-JS users never see an overlay and content is server-rendered underneath.
+
+### Exit criteria
+
+- No transition blocks server-rendered content or delays first paint.
+- Reduced motion fully bypasses the curtain.
+
+---
+
+## Phase 8, Verification
+
+**Goal:** prove correctness, accessibility, and content integrity before ship, and be explicit about which gates run in this environment.
+
+### Gates
+
+| Gate                 | Tool                     | Runs in this environment?  |
+| -------------------- | ------------------------ | -------------------------- |
+| Format check         | Prettier `--check`       | Yes                        |
+| Copy gate            | `scripts/check-copy.mjs` | Yes                        |
+| Lint                 | ESLint                   | Yes                        |
+| Typecheck            | `tsc --noEmit` (strict)  | Yes                        |
+| Unit tests           | Vitest                   | Yes                        |
+| Build                | `next build`             | Yes                        |
+| E2E (critical paths) | Playwright               | Requires a browser runtime |
+| Content integrity    | Manual checklist         | Yes                        |
+
+The aggregate command is `npm run verify`: `format:check` then `check:copy` then `lint` then `typecheck` then `test` then `build`.
+
+### Content-integrity checklist (this pass)
+
+- No fabricated metrics, publications, awards, or social links.
+- Phone number absent from the build.
+- ContamCheckr never implied to be on a package registry; it produces a caveated evidence score, not a binary verdict.
+- Helm planner concepts (`search_web`, `extract_text`, and the rest) not presented as executable engine actions; only `github.com/harihkk/Helm-browser-agent` linked.
+- Research Desk papers framed as external, not authored by Hari.
+- Masthead "Hari Kancharla" and legal name "Hari Krishna Kancharla" both present and correct.
+
+### What is deferred (and why)
+
+| Deferred                                            | Reason                                                                                                                                                                               |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Full Playwright e2e run and exhaustive matrix       | Playwright needs a browser runtime that is not available in this environment. Documented as run-instructions (`npm run test:e2e`) to run on a machine with a browser before release. |
+| Firefox and WebKit cross-browser checks             | Same browser-runtime constraint. The Playwright config targets these projects but they are not executed here. Deferred.                                                              |
+| Lighthouse (performance, a11y, best-practices, SEO) | Requires a browser runtime and a running server. Deferred to a machine with a browser.                                                                                               |
+| Motion visual baselines                             | Requires a stable browser-runtime baseline; see Phase 3. Deferred.                                                                                                                   |
+| Full performance recording                          | Requires a real device and profiler; see Phase 3. Deferred.                                                                                                                          |
+
+### Exit criteria
+
+- All locally runnable gates pass under `npm run verify`.
+- Browser-runtime gates are documented as run-instructions with a clear owner and thresholds, to be run before release.
+- The content-integrity checklist is fully satisfied.
+
+---
+
+## Summary: completed vs deferred
+
+| This pass completes                                                          | Deferred (with reason above)                             |
+| ---------------------------------------------------------------------------- | -------------------------------------------------------- |
+| Copy gate wired into `verify`                                                | Full Execution Trace sticky storytelling                 |
+| Balanced grid                                                                | Full demo state-machine and exhaustive Playwright matrix |
+| Fail-open, transform-only, reduced-motion-safe motion hot paths              | Motion visual baselines                                  |
+| First-person content rewrite, simpler headings                               | Firefox and WebKit cross-browser checks                  |
+| Demo accuracy from committed fixtures (including Helm planner-vs-engine fix) | Lighthouse run                                           |
+| Social channel config (no invented links, no phone leak)                     | Full performance recording                               |
+| Route curtain                                                                | Full Playwright e2e run                                  |
+| Local verification gates                                                     | Browser-runtime gates (documented as run-instructions)   |

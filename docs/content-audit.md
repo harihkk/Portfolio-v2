@@ -19,11 +19,11 @@ A verified inventory of every credible project, role, and content artifact for "
 
 The resume is the authority for professional history. The portfolio must not contradict it.
 
-| Organization | Title | Location | Dates | Status |
-|---|---|---|---|---|
-| Morgan Stanley | AI Software Engineer | Boston, MA | Nov 2024 - Present | Verified (resume) |
-| Infinite Infolab | Machine Learning Engineer | India | May 2021 - Jul 2023 | Verified (resume) |
-| Northeastern University | M.S. Data Analytics Engineering (ML concentration) | Boston, MA | Conferred May 2025 | Verified (resume); git author email `kancharla.ha@northeastern.edu` corroborates Northeastern affiliation |
+| Organization            | Title                                              | Location   | Dates               | Status                                                                                                    |
+| ----------------------- | -------------------------------------------------- | ---------- | ------------------- | --------------------------------------------------------------------------------------------------------- |
+| Morgan Stanley          | AI Software Engineer                               | Boston, MA | Nov 2024 - Present  | Verified (resume)                                                                                         |
+| Infinite Infolab        | Machine Learning Engineer                          | India      | May 2021 - Jul 2023 | Verified (resume)                                                                                         |
+| Northeastern University | M.S. Data Analytics Engineering (ML concentration) | Boston, MA | Conferred May 2025  | Verified (resume); git author email `kancharla.ha@northeastern.edu` corroborates Northeastern affiliation |
 
 - **Experience summary:** 4+ years (resume).
 - **Employer metrics (approved via resume, never alter the numbers):**
@@ -115,14 +115,14 @@ Four flagships, all verified from their repositories. Counts below are exact (fr
 
 ## 4. Earlier-Work Candidates
 
-| Project | Purpose | Tech | Status | Live link / works | Last update | Inclusion decision |
-|---|---|---|---|---|---|---|
-| **Prompt-Budd** | Chrome extension + FastAPI backend + MCP tool that enhances/scores LLM prompts inline, detects PII, recommends models, summarizes sessions | Python, FastAPI, Manifest-v3 extension, FastMCP, Gemini/OpenAI/Groq, Docker, Cloud Run, GitHub Actions CI/CD | Active | **https://promtbud.com/, verified 200 OK** | 2026-03-26 (`0c99024`) | **Include, strongest secondary.** Below flagship prominence. |
-| **AskRC** | End-to-end MLOps RAG chatbot over Northeastern Research Computing docs (scrape → Azure Search → Airflow/DVC/MLflow → Streamlit) | Python, Streamlit, Azure Cognitive Search + Blob, Airflow, DVC, MLflow, OpenAI, Docker, pytest, GitHub Actions | Archived | None (Azure + NEU-specific; not independently runnable) | 2024-12-01 (`e0f1b85`) | **Historical/academic label.** Good MLOps breadth; date + team context. Low-medium prominence. |
-| **GenBI** | NL data-analysis API: upload dataset, ask in English, get charts/tables/text | Python, FastAPI, LangChain, GPT-4o, Plotly, Pandas, Firebase, Vercel | Prototype | None (API-only, no frontend in repo) | 2026-03-26 (`e5e685c`) | **Include, low prominence** (or historical). Do not overstate as a finished app. |
-| **Visioncraft** | Text-to-video: Gemini script → Replicate images → GCP TTS → AssemblyAI captions → Remotion render | Next.js 15, React 19, Remotion, Gemini, Replicate, GCP TTS, AssemblyAI, Clerk, Neon/Drizzle, Firebase, Tailwind | Prototype | None | 2025-02-26 (`8cd3a92`) | **Earlier work with a real written description, historical.** README is untouched create-next-app boilerplate; must write a real description. Not flagship prominence. |
-| **self-healing-pipeline** | ML anomaly-detection data pipeline with automated repair + monitoring dashboard | Python, Flask, scikit-learn (Isolation Forest), pandas, SQLite, Slack webhooks | Prototype | None | 2026-03-26 (`fa42b5f`) | **Historical or omit.** **Do NOT repeat the unverified "85%+ repair success" / "production-grade" claims.** No tests, no Dockerfile present despite README. |
-| **weather-dashboard** | "Nimbus" React + Flask weather app (current + 5-day, adaptive UI) | React 19, Axios, Flask, Flask-CORS, OpenWeatherMap | Prototype | None | 2026-03-22 (`7a776bd`) | **Omit (or lowest prominence).** Common beginner project; least distinctive. |
+| Project                   | Purpose                                                                                                                                    | Tech                                                                                                            | Status    | Live link / works                                       | Last update            | Inclusion decision                                                                                                                                                     |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- | --------- | ------------------------------------------------------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Prompt-Budd**           | Chrome extension + FastAPI backend + MCP tool that enhances/scores LLM prompts inline, detects PII, recommends models, summarizes sessions | Python, FastAPI, Manifest-v3 extension, FastMCP, Gemini/OpenAI/Groq, Docker, Cloud Run, GitHub Actions CI/CD    | Active    | **https://promtbud.com/, verified 200 OK**              | 2026-03-26 (`0c99024`) | **Include, strongest secondary.** Below flagship prominence.                                                                                                           |
+| **AskRC**                 | End-to-end MLOps RAG chatbot over Northeastern Research Computing docs (scrape → Azure Search → Airflow/DVC/MLflow → Streamlit)            | Python, Streamlit, Azure Cognitive Search + Blob, Airflow, DVC, MLflow, OpenAI, Docker, pytest, GitHub Actions  | Archived  | None (Azure + NEU-specific; not independently runnable) | 2024-12-01 (`e0f1b85`) | **Historical/academic label.** Good MLOps breadth; date + team context. Low-medium prominence.                                                                         |
+| **GenBI**                 | NL data-analysis API: upload dataset, ask in English, get charts/tables/text                                                               | Python, FastAPI, LangChain, GPT-4o, Plotly, Pandas, Firebase, Vercel                                            | Prototype | None (API-only, no frontend in repo)                    | 2026-03-26 (`e5e685c`) | **Include, low prominence** (or historical). Do not overstate as a finished app.                                                                                       |
+| **Visioncraft**           | Text-to-video: Gemini script → Replicate images → GCP TTS → AssemblyAI captions → Remotion render                                          | Next.js 15, React 19, Remotion, Gemini, Replicate, GCP TTS, AssemblyAI, Clerk, Neon/Drizzle, Firebase, Tailwind | Prototype | None                                                    | 2025-02-26 (`8cd3a92`) | **Earlier work with a real written description, historical.** README is untouched create-next-app boilerplate; must write a real description. Not flagship prominence. |
+| **self-healing-pipeline** | ML anomaly-detection data pipeline with automated repair + monitoring dashboard                                                            | Python, Flask, scikit-learn (Isolation Forest), pandas, SQLite, Slack webhooks                                  | Prototype | None                                                    | 2026-03-26 (`fa42b5f`) | **Historical or omit.** **Do NOT repeat the unverified "85%+ repair success" / "production-grade" claims.** No tests, no Dockerfile present despite README.            |
+| **weather-dashboard**     | "Nimbus" React + Flask weather app (current + 5-day, adaptive UI)                                                                          | React 19, Axios, Flask, Flask-CORS, OpenWeatherMap                                                              | Prototype | None                                                    | 2026-03-22 (`7a776bd`) | **Omit (or lowest prominence).** Common beginner project; least distinctive.                                                                                           |
 
 **Excluded forks (do not list as Hari's work):** `langgraph`, `litellm`, `MLOps`.
 
@@ -132,18 +132,18 @@ Four flagships, all verified from their repositories. Counts below are exact (fr
 
 Scored 1-5 per dimension (Technical depth, Product clarity, Evidence, Documentation, Testing, Visual material, Current relevance, Differentiation, Public readiness). Max total 45. The four approved flagships retain top tier, no serious factual reason to demote any emerged.
 
-| Project | Tech | Product | Evid. | Docs | Test | Visual | Relev. | Diff. | Public | Total /45 | Tier |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| **Code Review Arena** | 5 | 5 | 5 | 5 | 5 | 1 | 5 | 5 | 4 | **40** | Flagship |
-| **DebugBrief** | 5 | 5 | 5 | 5 | 5 | 2 | 5 | 5 | 5 | **42** | Flagship |
-| **Helm Browser Agent** | 5 | 5 | 4 | 4 | 4 | 1 | 5 | 5 | 3 | **36** | Flagship |
-| **ContamCheckr** | 5 | 4 | 4 | 4 | 3 | 1 | 5 | 5 | 2 | **33** | Flagship |
-| **Prompt-Budd** | 4 | 4 | 4 | 4 | 2 | 2 | 4 | 3 | 5 | **32** | Earlier Work |
-| **AskRC** | 4 | 3 | 3 | 4 | 3 | 1 | 2 | 3 | 2 | **25** | Historical |
-| **GenBI** | 3 | 3 | 2 | 3 | 1 | 1 | 3 | 3 | 2 | **21** | Earlier Work |
-| **Visioncraft** | 4 | 2 | 2 | 1 | 1 | 1 | 2 | 4 | 2 | **19** | Historical |
-| **self-healing-pipeline** | 3 | 3 | 2 | 3 | 1 | 1 | 2 | 3 | 2 | **20** | Historical |
-| **weather-dashboard** | 2 | 3 | 2 | 3 | 1 | 1 | 2 | 1 | 2 | **17** | Omit |
+| Project                   | Tech | Product | Evid. | Docs | Test | Visual | Relev. | Diff. | Public | Total /45 | Tier         |
+| ------------------------- | ---- | ------- | ----- | ---- | ---- | ------ | ------ | ----- | ------ | --------- | ------------ |
+| **Code Review Arena**     | 5    | 5       | 5     | 5    | 5    | 1      | 5      | 5     | 4      | **40**    | Flagship     |
+| **DebugBrief**            | 5    | 5       | 5     | 5    | 5    | 2      | 5      | 5     | 5      | **42**    | Flagship     |
+| **Helm Browser Agent**    | 5    | 5       | 4     | 4    | 4    | 1      | 5      | 5     | 3      | **36**    | Flagship     |
+| **ContamCheckr**          | 5    | 4       | 4     | 4    | 3    | 1      | 5      | 5     | 2      | **33**    | Flagship     |
+| **Prompt-Budd**           | 4    | 4       | 4     | 4    | 2    | 2      | 4      | 3     | 5      | **32**    | Earlier Work |
+| **AskRC**                 | 4    | 3       | 3     | 4    | 3    | 1      | 2      | 3     | 2      | **25**    | Historical   |
+| **GenBI**                 | 3    | 3       | 2     | 3    | 1    | 1      | 3      | 3     | 2      | **21**    | Earlier Work |
+| **Visioncraft**           | 4    | 2       | 2     | 1    | 1    | 1      | 2      | 4     | 2      | **19**    | Historical   |
+| **self-healing-pipeline** | 3    | 3       | 2     | 3    | 1    | 1      | 2      | 3     | 2      | **20**    | Historical   |
+| **weather-dashboard**     | 2    | 3       | 2     | 3    | 1    | 1      | 2      | 1     | 2      | **17**    | Omit         |
 
 Scoring notes: Visual scores are uniformly low because only DebugBrief ships an image asset (see §6). DebugBrief leads on public readiness (PyPI-published, multi-OS CI matrix). ContamCheckr's lower testing/public-readiness reflects 30 tests, no CI, and not-published status. Helm's public-readiness is constrained by no packaging and local-only operation. self-healing-pipeline and weather-dashboard are scored as historical/omit on differentiation and evidence.
 
@@ -151,13 +151,13 @@ Scoring notes: Visual scores are uniformly low because only DebugBrief ships an 
 
 ## 6. Visual-Asset Inventory
 
-| Project | Image assets in repo | Implication |
-|---|---|---|
-| Code Review Arena | None | Build artifacts must be **generated** (diagrams, terminal captures, evidence-bundle views) |
-| Helm Browser Agent | None | Same, generated diagrams / terminal / evidence only |
-| DebugBrief | **`docs/demo.gif`** (terminal demo) | The only real image asset; usable, but verify it reflects current behavior |
-| ContamCheckr | None | Generated diagrams / report screenshots only |
-| All earlier work | None verified | Generated artifacts only |
+| Project            | Image assets in repo                | Implication                                                                                |
+| ------------------ | ----------------------------------- | ------------------------------------------------------------------------------------------ |
+| Code Review Arena  | None                                | Build artifacts must be **generated** (diagrams, terminal captures, evidence-bundle views) |
+| Helm Browser Agent | None                                | Same, generated diagrams / terminal / evidence only                                        |
+| DebugBrief         | **`docs/demo.gif`** (terminal demo) | The only real image asset; usable, but verify it reflects current behavior                 |
+| ContamCheckr       | None                                | Generated diagrams / report screenshots only                                               |
+| All earlier work   | None verified                       | Generated artifacts only                                                                   |
 
 **Rule:** Only DebugBrief has an existing image asset (`docs/demo.gif`). For every other system, all visual/build artifacts in the portfolio must be **generated**, architecture diagrams, terminal recordings, real report/evidence output, **never fabricated screenshots, photos, or video**. The portfolio brief also forbids any photo, video, or fake social/awards/publications, and the hero must be an interactive systems visualization, not a portrait.
 
@@ -166,12 +166,14 @@ Scoring notes: Visual scores are uniformly low because only DebugBrief ships an 
 ## 7. Missing Facts / Could-Not-Verify
 
 **Needs user approval (Hari):**
+
 - **LinkedIn URL**, not known; do not invent one. List as a remaining user input.
 - **KL University** (Research Assistant) and **Rlogical Techsoft** (Research Intern), old-site-only, not on the resume; do not publish as professional experience without approval.
 - All employer **metric figures** (§2), sourced to Hari's resume but treat as "approved via resume"; confirm presentation/provenance.
 - Per-system **approval-gated claims** listed in §3 (Code Review Arena run numbers, Helm test-count framing and absence of any success-rate, DebugBrief test-count/CI-status/PyPI-state/guarantees, ContamCheckr synthetic-validation framing).
 
 **Could not verify:**
+
 - **Old portfolio stack and design**, the `harihkk.github.io` clone is an empty 1-byte README; no HTML/CSS/JS/assets recoverable. Any claim about the old site's look would be fabrication.
 - **KL University degree and dates**, unconfirmed; likely undergraduate institution per old site, but no source confirms it.
 - **DebugBrief PyPI live state / version / adoption numbers**, README and pyproject reference `pypi.org/project/debugbrief/`, but this audit did not access PyPI; confirm live at 1.3.0 before stating publicly. (ContamCheckr's PyPI absence **was** verified: 404.)
@@ -180,6 +182,7 @@ Scoring notes: Visual scores are uniformly low because only DebugBrief ships an 
 - **Live success / reliability rates** for Helm (and any agent), not measured anywhere in the repos; do not publish a number.
 
 **Must never be published (hard rules):**
+
 - The **phone number** on the resume, exists but must never appear publicly.
 - Public contact is **email `harikrishnak2426@zohomail.com`** and **GitHub `github.com/harihkk`** only. (Note: the audit also observed `kancharla.ha@northeastern.edu` in git metadata and `harikrishnak2426@zohomail.com` as the brief's stated public email, use the brief's public email.)
 - No fabricated social accounts, awards, publications, photos, or video. The Research Desk must surface **external** papers Hari engages with (the 15 arXiv-verified papers in the audit JSON), never presented as Hari's own authored work.

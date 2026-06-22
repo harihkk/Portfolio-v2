@@ -4,17 +4,17 @@ The Systems Journal, Hari Kancharla. Generated 2026-06-21 from a clean productio
 
 ## Quality gates
 
-| Gate | Command | Result |
-|---|---|---|
-| Lint | `npm run lint` | ✅ pass (0 errors, 0 warnings) |
-| Type check (strict) | `npm run typecheck` | ✅ pass |
-| Unit tests | `npm run test` | ✅ 22 passed (3 files) |
-| Production build | `npm run build` | ✅ pass, 39 routes prerendered |
-| Combined gate | `npm run verify` | ✅ pass (lint → typecheck → test → build) |
-| E2E (Chromium + mobile) | `npm run test:e2e` | ✅ 94 passed, 2 skipped (project-gated) |
-| Accessibility (axe) | `playwright test e2e/a11y.spec.ts` | ✅ 22 passed, 0 serious/critical violations |
-| Broken-link / route scan | curl all routes | ✅ 17 routes correct status (200s, 404 for unknown) |
-| Provenance / public-claim audit | `tests/unit/content.test.ts` + [public-content-review.md](public-content-review.md) | ✅ pass |
+| Gate                            | Command                                                                             | Result                                              |
+| ------------------------------- | ----------------------------------------------------------------------------------- | --------------------------------------------------- |
+| Lint                            | `npm run lint`                                                                      | ✅ pass (0 errors, 0 warnings)                      |
+| Type check (strict)             | `npm run typecheck`                                                                 | ✅ pass                                             |
+| Unit tests                      | `npm run test`                                                                      | ✅ 22 passed (3 files)                              |
+| Production build                | `npm run build`                                                                     | ✅ pass, 39 routes prerendered                      |
+| Combined gate                   | `npm run verify`                                                                    | ✅ pass (lint → typecheck → test → build)           |
+| E2E (Chromium + mobile)         | `npm run test:e2e`                                                                  | ✅ 94 passed, 2 skipped (project-gated)             |
+| Accessibility (axe)             | `playwright test e2e/a11y.spec.ts`                                                  | ✅ 22 passed, 0 serious/critical violations         |
+| Broken-link / route scan        | curl all routes                                                                     | ✅ 17 routes correct status (200s, 404 for unknown) |
+| Provenance / public-claim audit | `tests/unit/content.test.ts` + [public-content-review.md](public-content-review.md) | ✅ pass                                             |
 
 ## Unit coverage (22 tests)
 
@@ -27,6 +27,7 @@ All routes load with no horizontal overflow; masthead + thesis; phone-number lea
 ## Accessibility (axe-core, WCAG 2.0/2.1 A & AA)
 
 0 serious/critical violations across 11 routes × 2 viewports. Issues found and fixed during QA:
+
 - Color contrast on dimmed demo states (`opacity-30/45` dragged text below 4.5:1) → replaced opacity-dimming with color/border differentiation.
 - `--warning` was 4.19:1 at small sizes → darkened to `#8a5616`.
 - Selected filter chips (white on `#e34a2f`, 3.71:1) → switched to `bg-signal-dark` (#a82e1d).
@@ -37,7 +38,7 @@ Beyond axe: semantic landmarks, skip link, visible focus rings, keyboard-operabl
 
 ## Bug found and fixed via real-browser testing
 
-**GSAP ScrollTrigger registration order.** Registration ran in the provider's `useEffect`, but child `useGSAP` effects fire *before* the parent's, so `scrollTrigger` tweens were created before the plugin was registered. Effect: reveal animations silently no-op'd and `[data-reveal]` content stayed at `opacity:0` for motion-enabled users. Fixed by registering `ScrollTrigger` at module load in `lib/motion.ts`. Confirmed via Playwright console capture (warnings gone) and DOM checks (content present, 0 errors). This is exactly the class of issue code inspection alone would miss.
+**GSAP ScrollTrigger registration order.** Registration ran in the provider's `useEffect`, but child `useGSAP` effects fire _before_ the parent's, so `scrollTrigger` tweens were created before the plugin was registered. Effect: reveal animations silently no-op'd and `[data-reveal]` content stayed at `opacity:0` for motion-enabled users. Fixed by registering `ScrollTrigger` at module load in `lib/motion.ts`. Confirmed via Playwright console capture (warnings gone) and DOM checks (content present, 0 errors). This is exactly the class of issue code inspection alone would miss.
 
 ## Not executed in this environment (run instructions)
 

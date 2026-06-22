@@ -12,9 +12,10 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "check:copy": "node scripts/check-copy.mjs",
     "format": "prettier --write \"**/*.{ts,tsx,css,md,mdx,json}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,css,md,mdx,json}\"",
-    "verify": "npm run lint && npm run typecheck && npm run test && npm run build"
+    "verify": "npm run format:check && npm run check:copy && npm run lint && npm run typecheck && npm run test && npm run build"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

@@ -1,6 +1,6 @@
 # Performance Budget
 
-This document defines the performance budget for *The Systems Journal* (Hari Kancharla's portfolio) and the engineering tactics that keep the site inside it. The budget is a hard contract: a build that misses these numbers is a regression, not a judgment call.
+This document defines the performance budget for _The Systems Journal_ (Hari Kancharla's portfolio) and the engineering tactics that keep the site inside it. The budget is a hard contract: a build that misses these numbers is a regression, not a judgment call.
 
 ## Why a budget exists
 
@@ -14,20 +14,20 @@ The site is built on Next.js 16 (App Router), React 19, TypeScript (strict), Tai
 
 Every primary route must meet or exceed these Lighthouse scores (mobile profile, the stricter of the two):
 
-| Category | Minimum score |
-| --- | --- |
-| Performance | >= 90 |
-| Accessibility | >= 95 |
-| Best Practices | >= 95 |
-| SEO | >= 95 |
+| Category       | Minimum score |
+| -------------- | ------------- |
+| Performance    | >= 90         |
+| Accessibility  | >= 95         |
+| Best Practices | >= 95         |
+| SEO            | >= 95         |
 
 ### Core Web Vitals (field-equivalent lab thresholds)
 
-| Metric | Target | Meaning |
-| --- | --- | --- |
-| LCP (Largest Contentful Paint) | < 2.5 s | Largest above-the-fold element painted |
-| CLS (Cumulative Layout Shift) | < 0.1 | Visual stability; no content jumping |
-| INP (Interaction to Next Paint) | < 200 ms | Responsiveness to user input |
+| Metric                          | Target   | Meaning                                |
+| ------------------------------- | -------- | -------------------------------------- |
+| LCP (Largest Contentful Paint)  | < 2.5 s  | Largest above-the-fold element painted |
+| CLS (Cumulative Layout Shift)   | < 0.1    | Visual stability; no content jumping   |
+| INP (Interaction to Next Paint) | < 200 ms | Responsiveness to user input           |
 
 ### Runtime hygiene (pass/fail, no tolerance)
 
@@ -126,17 +126,17 @@ The pass/fail runtime gates (no console errors, no hydration warnings, no unhand
 
 ## Summary
 
-| Lever | Protects |
-| --- | --- |
-| Server Components by default | Performance, LCP, JS budget |
-| Client islands only | JS budget, INP |
-| Per-route code splitting + lazy demos | LCP, JS budget |
-| GSAP only where used | JS budget |
-| SVG/CSS over images | Performance, LCP, image weight (near zero) |
-| Explicit dimensions | CLS |
-| Transforms + opacity only | CLS, INP, main-thread |
-| ScrollTrigger cleanup | No permanent loops |
-| ScrollTrigger refresh after fonts | CLS |
-| `next/font` (no blocking `@import`) | LCP, CLS |
+| Lever                                 | Protects                                   |
+| ------------------------------------- | ------------------------------------------ |
+| Server Components by default          | Performance, LCP, JS budget                |
+| Client islands only                   | JS budget, INP                             |
+| Per-route code splitting + lazy demos | LCP, JS budget                             |
+| GSAP only where used                  | JS budget                                  |
+| SVG/CSS over images                   | Performance, LCP, image weight (near zero) |
+| Explicit dimensions                   | CLS                                        |
+| Transforms + opacity only             | CLS, INP, main-thread                      |
+| ScrollTrigger cleanup                 | No permanent loops                         |
+| ScrollTrigger refresh after fonts     | CLS                                        |
+| `next/font` (no blocking `@import`)   | LCP, CLS                                   |
 
 The budget holds when every primary route meets the four Lighthouse minimums and the three Core Web Vitals thresholds on a production build, ships within its per-route JS budget, and runs with a clean console and no permanent main-thread work.
