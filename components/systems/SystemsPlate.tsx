@@ -20,6 +20,7 @@ const STAGES = [
  */
 export default function SystemsPlate() {
   const scopeRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
   const dotRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
 
@@ -27,14 +28,21 @@ export default function SystemsPlate() {
     () => {
       if (prefersReducedMotion()) {
         setActive(STAGES.length - 1);
+        // No traveling node in the static diagram; the lit nodes carry state.
+        if (dotRef.current) gsap.set(dotRef.current, { autoAlpha: 0 });
         return;
       }
       const dot = dotRef.current;
-      if (!dot) return;
+      const track = trackRef.current;
+      if (!dot || !track) return;
+      // Transform-only: center on the y origin, then translate down the spine
+      // by a fraction of the measured track height (no layout-property animation).
+      const h = () => track.getBoundingClientRect().height;
+      gsap.set(dot, { yPercent: -50, y: h() * (STAGES[0].top / 100) });
       const tl = gsap.timeline({ repeat: -1, paused: true, repeatDelay: 0.4 });
       STAGES.forEach((stage, i) => {
         tl.to(dot, {
-          top: `${stage.top}%`,
+          y: () => h() * (stage.top / 100),
           duration: 0.85,
           ease: "power1.inOut",
           onComplete: () => setActive(i),
@@ -68,14 +76,13 @@ export default function SystemsPlate() {
         </span>
       </div>
 
-      <div className="relative pl-6" aria-hidden>
+      <div ref={trackRef} className="relative pl-6" aria-hidden>
         {/* spine */}
         <div className="absolute top-2 bottom-2 left-[7px] w-px bg-[color:var(--rule)]" />
-        {/* traveling signal */}
+        {/* traveling signal (transform-driven) */}
         <div
           ref={dotRef}
-          className="absolute left-[2px] h-3 w-3 -translate-y-1/2 rounded-full bg-signal shadow-[0_0_0_5px_var(--signal-wash)]"
-          style={{ top: "6%" }}
+          className="absolute top-0 left-[2px] h-3 w-3 rounded-full bg-signal shadow-[0_0_0_5px_var(--signal-wash)]"
         />
         <ul className="flex flex-col justify-between gap-6">
           {STAGES.map((stage, i) => {

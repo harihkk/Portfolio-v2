@@ -1,13 +1,21 @@
 "use client";
 
 import { useEffect } from "react";
-import { registerGsap, prefersReducedMotion, ScrollTrigger } from "@/lib/motion";
+import {
+  registerGsap,
+  prefersReducedMotion,
+  ScrollTrigger,
+} from "@/lib/motion";
+
+type MotionWindow = Window & {
+  __tsjMotionReady?: boolean;
+  __tsjRevealFailsafe?: ReturnType<typeof setTimeout>;
+};
 
 /**
- * Registers GSAP once, refreshes ScrollTrigger after fonts/images settle so
- * pinned/triggered positions are correct, and cleans triggers up on unmount.
- * The reveal hidden-state is armed by an inline script in <head> (before paint)
- * to avoid a flash; this provider only handles refresh + cleanup.
+ * Registers GSAP, confirms motion readiness (which disarms the fail-open timer
+ * set by the inline head script), refreshes ScrollTrigger after fonts/images
+ * settle, and cleans triggers up on unmount.
  */
 export default function MotionProvider({
   children,
@@ -18,9 +26,16 @@ export default function MotionProvider({
     if (prefersReducedMotion()) return;
     registerGsap();
 
-    const refresh = () => ScrollTrigger.refresh();
+    // Confirm motion is live so the fail-open failsafe does not strip the
+    // reveal start-state. (If this code never runs, content reveals anyway.)
+    const w = window as MotionWindow;
+    w.__tsjMotionReady = true;
+    if (w.__tsjRevealFailsafe) {
+      clearTimeout(w.__tsjRevealFailsafe);
+      w.__tsjRevealFailsafe = undefined;
+    }
 
-    // Recompute trigger positions after web fonts load (layout shifts).
+    const refresh = () => ScrollTrigger.refresh();
     if (typeof document !== "undefined" && "fonts" in document) {
       document.fonts.ready.then(refresh).catch(() => {});
     }

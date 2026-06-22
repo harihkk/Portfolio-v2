@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { gsap, prefersReducedMotion, EASE } from "@/lib/motion";
 
 export type EvidenceAnchor = {
   id: string;
@@ -11,75 +12,113 @@ export type EvidenceAnchor = {
 };
 
 /**
- * The Evidence Line, the site's signature interaction.
- * A thin signal line carries a draggable node. Drag it (pointer) or move it
- * (arrow keys) toward an evidence anchor to light the relationship; release and
- * it springs to the nearest anchor. Implemented as an ARIA slider so it is
- * fully keyboard operable, and it never traps scroll or blocks reading. Under
- * reduced motion the spring is replaced by instant snapping (CSS handles this).
+ * The Evidence Line, the site's signature interaction. A draggable signal node
+ * slides along a line and lights the nearest evidence anchor. The hot path is
+ * transform only: the node moves with `x` and the filled line scales with
+ * `scaleX` via gsap.quickTo, the track width is cached with a ResizeObserver,
+ * and React state changes only when the active anchor changes (never per
+ * pointer frame). Fully keyboard operable as an ARIA slider; reduced motion
+ * snaps instantly.
  */
 export default function EvidenceLine({
   anchors,
-  caption = "Drag the signal, or use arrow keys, to connect the evidence.",
+  caption = "Drag the signal, or use the arrow keys, to connect the evidence.",
 }: {
   anchors: EvidenceAnchor[];
   caption?: string;
 }) {
+  const count = anchors.length;
   const trackRef = useRef<HTMLDivElement>(null);
-  const [active, setActive] = useState(0);
+  const nodeRef = useRef<HTMLDivElement>(null);
+  const fillRef = useRef<HTMLDivElement>(null);
+
+  const widthRef = useRef(0);
+  const draggingRef = useRef(false);
   const activeRef = useRef(0);
-  const [pct, setPct] = useState(() => positionFor(0, anchors.length));
-  const [dragging, setDragging] = useState(false);
+  const quickX = useRef<((v: number) => void) | null>(null);
+  const quickFill = useRef<((v: number) => void) | null>(null);
+  const placeRef = useRef<(i: number) => void>(() => {});
+  const [active, setActive] = useState(0);
 
-  const settleTo = useCallback(
-    (index: number) => {
-      const clamped = Math.max(0, Math.min(anchors.length - 1, index));
-      activeRef.current = clamped;
-      setActive(clamped);
-      setPct(positionFor(clamped, anchors.length));
-    },
-    [anchors.length],
-  );
-
-  const pointerToPct = useCallback((clientX: number) => {
+  useEffect(() => {
     const track = trackRef.current;
-    if (!track) return 0;
-    const rect = track.getBoundingClientRect();
-    return Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100));
-  }, []);
+    const node = nodeRef.current;
+    const fill = fillRef.current;
+    if (!track || !node || !fill) return;
 
-  const nearestIndex = useCallback(
-    (p: number) => Math.round((p / 100) * (anchors.length - 1)),
-    [anchors.length],
-  );
+    const reduce = prefersReducedMotion();
+    gsap.set(node, { xPercent: -50, yPercent: -50 });
+    gsap.set(fill, {
+      transformOrigin: "left center",
+      yPercent: -50,
+      scaleX: 0,
+    });
+    quickX.current = reduce
+      ? (v: number) => gsap.set(node, { x: v })
+      : gsap.quickTo(node, "x", { duration: 0.4, ease: EASE });
+    quickFill.current = reduce
+      ? (v: number) => gsap.set(fill, { scaleX: v })
+      : gsap.quickTo(fill, "scaleX", { duration: 0.45, ease: EASE });
+
+    const placeAt = (index: number) => {
+      const frac = fractionFor(index, count);
+      quickX.current?.(frac * widthRef.current);
+      quickFill.current?.(frac);
+    };
+    const measure = () => {
+      widthRef.current = track.getBoundingClientRect().width;
+      placeAt(activeRef.current);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(track);
+
+    const fracFromClientX = (clientX: number) => {
+      const rect = track.getBoundingClientRect();
+      return Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    };
+    const onMove = (e: PointerEvent) => {
+      if (!draggingRef.current) return;
+      const frac = fracFromClientX(e.clientX);
+      quickX.current?.(frac * widthRef.current);
+      quickFill.current?.(frac);
+      const idx = Math.round(frac * (count - 1));
+      if (idx !== activeRef.current) {
+        activeRef.current = idx;
+        setActive(idx); // state only when the anchor changes
+      }
+    };
+    const onUp = () => {
+      if (!draggingRef.current) return;
+      draggingRef.current = false;
+      placeAt(activeRef.current); // snap to the nearest anchor
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+
+    // expose placeAt for keyboard handler via the ref bag
+    placeRef.current = placeAt;
+
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+    };
+  }, [count]);
+
+  const settleTo = (index: number) => {
+    const clamped = Math.max(0, Math.min(count - 1, index));
+    activeRef.current = clamped;
+    setActive(clamped);
+    placeRef.current(clamped);
+  };
 
   const onPointerDown = (e: React.PointerEvent) => {
     (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
-    setDragging(true);
+    draggingRef.current = true;
   };
-
-  useEffect(() => {
-    if (!dragging) return;
-    const move = (e: PointerEvent) => {
-      const p = pointerToPct(e.clientX);
-      const idx = nearestIndex(p);
-      activeRef.current = idx;
-      setPct(p);
-      setActive(idx);
-    };
-    const up = () => {
-      setDragging(false);
-      setPct(positionFor(activeRef.current, anchors.length));
-    };
-    window.addEventListener("pointermove", move);
-    window.addEventListener("pointerup", up);
-    window.addEventListener("pointercancel", up);
-    return () => {
-      window.removeEventListener("pointermove", move);
-      window.removeEventListener("pointerup", up);
-      window.removeEventListener("pointercancel", up);
-    };
-  }, [dragging, pointerToPct, nearestIndex, anchors.length]);
 
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
@@ -93,7 +132,7 @@ export default function EvidenceLine({
       settleTo(0);
     } else if (e.key === "End") {
       e.preventDefault();
-      settleTo(anchors.length - 1);
+      settleTo(count - 1);
     }
   };
 
@@ -108,82 +147,73 @@ export default function EvidenceLine({
         <p className="kicker mb-6">{caption}</p>
 
         <div className="relative h-16 select-none" ref={trackRef}>
-          {/* base line */}
           <div className="absolute top-1/2 right-0 left-0 h-px -translate-y-1/2 bg-[color:var(--rule)]" />
-          {/* lit portion up to the node */}
+          {/* lit portion (transform: scaleX) */}
           <div
+            ref={fillRef}
             aria-hidden
-            className="absolute top-1/2 left-0 h-[2px] -translate-y-1/2 bg-signal"
-            style={{
-              width: `${pct}%`,
-              transition: dragging ? "none" : "width 0.45s cubic-bezier(.22,1,.36,1)",
-            }}
+            className="absolute top-1/2 left-0 h-[2px] w-full bg-signal"
           />
-          {/* anchors */}
-          {anchors.map((a, i) => {
-            const p = positionFor(i, anchors.length);
-            const isActive = i === active;
-            return (
-              <button
-                key={a.id}
-                type="button"
-                onClick={() => settleTo(i)}
-                tabIndex={-1}
-                aria-hidden
-                className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2"
-                style={{ left: `${p}%` }}
-              >
-                <span
-                  className={`block rounded-full transition-all duration-200 ${
-                    isActive
-                      ? "h-3 w-3 bg-signal shadow-[0_0_0_5px_var(--signal-wash)]"
-                      : "h-2 w-2 bg-[color:var(--rule)]"
-                  }`}
-                />
-              </button>
-            );
-          })}
-          {/* draggable node (the slider) */}
+          {/* anchors (static markers) */}
+          {anchors.map((a, i) => (
+            <button
+              key={a.id}
+              type="button"
+              onClick={() => settleTo(i)}
+              tabIndex={-1}
+              aria-hidden
+              className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2"
+              style={{ left: `${fractionFor(i, count) * 100}%` }}
+            >
+              <span
+                className={`block rounded-full transition-all duration-200 ${
+                  i === active
+                    ? "h-3 w-3 bg-signal shadow-[0_0_0_5px_var(--signal-wash)]"
+                    : "h-2 w-2 bg-[color:var(--rule)]"
+                }`}
+              />
+            </button>
+          ))}
+          {/* draggable node (the slider, transform: x) */}
           <div
+            ref={nodeRef}
             role="slider"
             tabIndex={0}
             aria-label={`Evidence signal. Current: ${current.label}`}
             aria-valuemin={1}
-            aria-valuemax={anchors.length}
+            aria-valuemax={count}
             aria-valuenow={active + 1}
             aria-valuetext={current.label}
             data-focus-ring
             onPointerDown={onPointerDown}
             onKeyDown={onKeyDown}
-            className="group absolute top-1/2 z-10 grid h-9 w-9 -translate-x-1/2 -translate-y-1/2 cursor-grab touch-none place-items-center rounded-full focus-visible:ring-2 focus-visible:ring-signal focus-visible:outline-none active:cursor-grabbing"
-            style={{
-              left: `${pct}%`,
-              transition: dragging
-                ? "none"
-                : "left 0.45s cubic-bezier(.22,1,.36,1)",
-            }}
+            className="group absolute top-1/2 left-0 z-10 grid h-9 w-9 cursor-grab touch-none place-items-center rounded-full focus-visible:ring-2 focus-visible:ring-signal focus-visible:outline-none active:cursor-grabbing"
           >
             <span className="h-4 w-4 rounded-full border-2 border-signal bg-paper shadow-[0_0_0_4px_var(--signal-wash)] transition-transform group-active:scale-90" />
           </div>
         </div>
 
-        {/* readout */}
         <div className="mt-6 grid gap-4 sm:grid-cols-[auto_1fr] sm:items-baseline">
           <p className="stamp text-sm text-signal-dark">
-            {String(active + 1).padStart(2, "0")} / {String(anchors.length).padStart(2, "0")}
+            {String(active + 1).padStart(2, "0")} /{" "}
+            {String(count).padStart(2, "0")}
           </p>
           <p className="measure text-ink-soft">
-            <span className="font-serif text-xl text-ink">{current.label}.</span>{" "}
+            <span className="font-serif text-xl text-ink">
+              {current.label}.
+            </span>{" "}
             {current.detail}{" "}
             {current.href ? (
-              <Link href={current.href} className="link-annotate text-signal-dark">
+              <Link
+                href={current.href}
+                className="link-annotate text-signal-dark"
+              >
                 Open ↗
               </Link>
             ) : null}
           </p>
         </div>
 
-        {/* polite announcement for screen readers */}
         <p className="sr-only" aria-live="polite">
           {current.label}. {current.detail}
         </p>
@@ -192,9 +222,9 @@ export default function EvidenceLine({
   );
 }
 
-function positionFor(index: number, count: number): number {
-  if (count <= 1) return 50;
-  const min = 6;
-  const max = 94;
+function fractionFor(index: number, count: number): number {
+  if (count <= 1) return 0.5;
+  const min = 0.06;
+  const max = 0.94;
   return min + (index / (count - 1)) * (max - min);
 }

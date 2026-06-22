@@ -62,7 +62,11 @@ export default function OpeningSequence() {
       STEPS.forEach((_, i) => {
         tl.add(() => setStep(i), i * 0.23);
       });
-      tl.to(overlay, { yPercent: -100, duration: 0.5, ease: "power3.inOut" }, ">-0.05");
+      tl.to(
+        overlay,
+        { yPercent: -100, duration: 0.5, ease: "power3.inOut" },
+        ">-0.05",
+      );
     }, overlayRef);
 
     // Hard safety cap: never trap the page.
@@ -87,7 +91,9 @@ export default function OpeningSequence() {
       role="status"
       aria-label="Indexing The Systems Journal"
     >
-      <span className="sr-only">Indexing The Systems Journal, please wait.</span>
+      <span className="sr-only">
+        Indexing The Systems Journal, please wait.
+      </span>
       <div className="shell flex w-full max-w-3xl flex-col items-center gap-8">
         <p className="kicker">Indexing the Systems Journal</p>
         <div className="h-px w-full max-w-md overflow-hidden bg-[color:var(--hairline)]">

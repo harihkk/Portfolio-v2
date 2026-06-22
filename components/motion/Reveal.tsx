@@ -34,36 +34,54 @@ export default function Reveal({
     () => {
       const el = ref.current;
       if (!el) return;
-      if (prefersReducedMotion()) {
-        gsap.set(el, { opacity: 1 });
-        return;
-      }
-      if (stagger) {
-        const items = el.querySelectorAll<HTMLElement>("[data-reveal-item]");
-        gsap.set(el, { opacity: 1 });
-        gsap.set(items, { opacity: 0, y });
-        gsap.to(items, {
-          opacity: 1,
-          y: 0,
-          duration: 0.7,
-          ease: EASE,
-          stagger: 0.08,
-          delay,
-          scrollTrigger: { trigger: el, start: "top 86%", once },
-        });
-      } else {
-        gsap.fromTo(
-          el,
-          { opacity: 0, y },
-          {
+      try {
+        if (prefersReducedMotion()) {
+          gsap.set(el, { opacity: 1 });
+          return;
+        }
+        if (stagger) {
+          const items = el.querySelectorAll<HTMLElement>("[data-reveal-item]");
+          gsap.set(el, { opacity: 1 });
+          gsap.set(items, { opacity: 0, y });
+          gsap.to(items, {
             opacity: 1,
             y: 0,
-            duration: 0.8,
+            duration: 0.7,
             ease: EASE,
+            stagger: 0.08,
             delay,
+            // will-change applied just before, cleared after (never persistent).
+            onStart: () =>
+              items.forEach(
+                (it) => (it.style.willChange = "transform, opacity"),
+              ),
+            onComplete: () =>
+              items.forEach((it) => (it.style.willChange = "auto")),
             scrollTrigger: { trigger: el, start: "top 86%", once },
-          },
-        );
+          });
+        } else {
+          gsap.fromTo(
+            el,
+            { opacity: 0, y },
+            {
+              opacity: 1,
+              y: 0,
+              duration: 0.8,
+              ease: EASE,
+              delay,
+              onStart: () => {
+                el.style.willChange = "transform, opacity";
+              },
+              onComplete: () => {
+                el.style.willChange = "auto";
+              },
+              scrollTrigger: { trigger: el, start: "top 86%", once },
+            },
+          );
+        }
+      } catch {
+        // Fail open: never leave content hidden if motion errors.
+        gsap.set(el, { opacity: 1 });
       }
     },
     { scope: ref },

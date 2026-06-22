@@ -74,7 +74,11 @@ export const viewport: Viewport = {
 
 // Arms the reveal start-state before paint, only when JS works AND motion is
 // allowed, so there is never a flash and content is fully visible otherwise.
-const revealScript = `try{if(window.matchMedia&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.setAttribute('data-reveal-ready','')}}catch(e){}`;
+// Fail-open: arm the reveal start-state before paint (only when motion is
+// allowed), but if the motion system does not confirm readiness within a short
+// window, remove it so no animation failure can leave content hidden. The
+// motion provider sets window.__tsjMotionReady and clears the timer once live.
+const revealScript = `try{if(window.matchMedia&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){var d=document.documentElement;d.setAttribute('data-reveal-ready','');window.__tsjRevealFailsafe=setTimeout(function(){if(!window.__tsjMotionReady){d.removeAttribute('data-reveal-ready')}},2200)}}catch(e){}`;
 
 export default function RootLayout({
   children,
