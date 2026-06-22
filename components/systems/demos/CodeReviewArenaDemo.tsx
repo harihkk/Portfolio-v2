@@ -198,7 +198,11 @@ export default function CodeReviewArenaDemo() {
         {(
           [
             { key: "detection", label: "Detection", value: result.detection },
-            { key: "validated", label: "Validated repair", value: result.validated },
+            {
+              key: "validated",
+              label: "Validated repair",
+              value: result.validated,
+            },
           ] as const
         ).map((axis) => {
           const pct = done ? axis.value * 100 : 0;
@@ -211,7 +215,11 @@ export default function CodeReviewArenaDemo() {
               <p className="kicker">{axis.label}</p>
               <p
                 className={`tnum mt-1 font-mono text-2xl ${
-                  done ? (full ? "text-success" : "text-warning") : "text-ink-muted"
+                  done
+                    ? full
+                      ? "text-success"
+                      : "text-warning"
+                    : "text-ink-muted"
                 }`}
               >
                 {done ? axis.value.toFixed(3) : ", "}

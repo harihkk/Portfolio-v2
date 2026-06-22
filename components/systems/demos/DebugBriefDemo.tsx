@@ -176,19 +176,14 @@ export default function DebugBriefDemo() {
           <div className="space-y-2 px-4 py-3">
             {BRIEF.map((b, i) =>
               b.head ? (
-                <p
-                  key={i}
-                  className="font-serif text-base text-ink first:mt-0"
-                >
+                <p key={i} className="font-serif text-base text-ink first:mt-0">
                   {b.text.replace(/^##\s*/, "")}
                 </p>
               ) : (
                 <p
                   key={i}
                   className={`font-mono text-[0.74rem] leading-relaxed ${
-                    b.emphasis
-                      ? "text-signal-dark"
-                      : "text-ink-soft"
+                    b.emphasis ? "text-signal-dark" : "text-ink-soft"
                   }`}
                 >
                   {b.text}
@@ -200,7 +195,7 @@ export default function DebugBriefDemo() {
       ) : null}
 
       <p className="font-mono text-[0.66rem] tracking-[0.06em] text-ink-muted">
-        No AI, no network &mdash; built only from recorded evidence.
+        No AI, no network requests. The brief is built from recorded evidence.
       </p>
     </DemoShell>
   );
