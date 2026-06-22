@@ -17,9 +17,9 @@ export default function ContactPage() {
   return (
     <>
       <PageHeader
-        kicker="Open channel"
+        kicker="Contact"
         title="Let's talk about systems that have to prove they work."
-        intro="Evaluation infrastructure, reliable agents, developer tools, retrieval systems, or production AI, if that is the work, the channel is open."
+        intro="Evaluation infrastructure, reliable agents, developer tools, retrieval systems, or production AI: if that is the work, I would like to hear about it."
         meta="Vol. I · Contact"
       />
 
@@ -55,7 +55,8 @@ export default function ContactPage() {
               </ul>
               <p className="mt-6 font-mono text-[0.7rem] leading-relaxed text-ink-muted">
                 Based in Boston, Massachusetts. The form sends only if a mail
-                provider is configured; otherwise it points you to the email link, it never claims a delivery it cannot confirm.
+                provider is configured; otherwise it points you to the email
+                link, it never claims a delivery it cannot confirm.
               </p>
             </div>
           </Reveal>

@@ -68,7 +68,7 @@ const INDEX_ITEMS = [
   { n: "V", label: "Field notes", href: "#notes" },
   { n: "VI", label: "Earlier work", href: "#earlier" },
   { n: "VII", label: "About", href: "/about" },
-  { n: "VIII", label: "Open channel", href: "#contact" },
+  { n: "VIII", label: "Contact", href: "#contact" },
 ];
 
 const EVIDENCE_ANCHORS: EvidenceAnchor[] = [
@@ -82,7 +82,8 @@ const EVIDENCE_ANCHORS: EvidenceAnchor[] = [
   {
     id: "cra",
     label: "Code Review Arena",
-    detail: "Scores a found bug and a working fix separately, 306 tests, 30 cases.",
+    detail:
+      "Scores a found bug and a working fix separately, 306 tests, 30 cases.",
     href: "/systems/code-review-arena",
   },
   {
@@ -95,18 +96,25 @@ const EVIDENCE_ANCHORS: EvidenceAnchor[] = [
   {
     id: "debugbrief",
     label: "DebugBrief",
-    detail: "An evidence-only debugging brief, on PyPI, 376 tests across Python 3.9-3.14.",
+    detail:
+      "An evidence-only debugging brief, on PyPI, 376 tests across Python 3.9-3.14.",
     href: "/systems/debugbrief",
   },
   {
     id: "contamcheckr",
     label: "ContamCheckr",
-    detail: "A caveated contamination evidence score, never a verdict, 30 tests.",
+    detail:
+      "A caveated contamination evidence score, never a verdict, 30 tests.",
     href: "/systems/contamcheckr",
   },
 ];
 
-const researchPreview = ["swe-bench", "webarena", "rephrased-contamination", "ragas"]
+const researchPreview = [
+  "swe-bench",
+  "webarena",
+  "rephrased-contamination",
+  "ragas",
+]
   .map((slug) => getPaper(slug))
   .filter((p): p is NonNullable<typeof p> => Boolean(p));
 
@@ -147,7 +155,9 @@ export default function HomePage() {
               <h2 className="display-lg mt-3 font-serif text-ink">
                 Building AI systems that have to prove they work.
               </h2>
-              <p className="measure mt-6 text-lg text-ink-soft">{profile.thesis}</p>
+              <p className="measure mt-6 text-lg text-ink-soft">
+                {profile.thesis}
+              </p>
               <p className="measure mt-4 text-ink-muted">{profile.summary}</p>
 
               <div className="mt-8 flex flex-wrap gap-x-4 gap-y-3">
@@ -197,8 +207,8 @@ export default function HomePage() {
         <SectionHeader
           kicker="By the numbers"
           index="§ 03"
-          title="Verified, sourced, defensible."
-          intro="Every figure traces to a repository, test suite, release, or the résumé, counted at the audited commits, not rounded up for effect."
+          title="Selected numbers"
+          intro="Each figure traces to a repository, a test suite, a release, or my resume. I would rather show a small honest number than a big vague one."
         />
         <div className="mt-10">
           <MetricGrid />
@@ -217,7 +227,9 @@ export default function HomePage() {
                   className="group flex items-baseline justify-between gap-4 border-b border-[color:var(--hairline)] py-4"
                 >
                   <span className="flex items-baseline gap-4">
-                    <span className="stamp w-8 text-sm text-ink-muted">{item.n}</span>
+                    <span className="stamp w-8 text-sm text-ink-muted">
+                      {item.n}
+                    </span>
                     <span className="font-serif text-2xl text-ink transition-colors group-hover:text-signal-dark sm:text-3xl">
                       {item.label}
                     </span>
@@ -243,9 +255,9 @@ export default function HomePage() {
       {/* 06, Four frontiers */}
       <section className="shell py-16 sm:py-24">
         <SectionHeader
-          kicker="Engineering frontiers"
+          kicker="Engineering focus areas"
           index="§ 06"
-          title="Four problems worth getting right."
+          title="What I build"
         />
         <Reveal stagger>
           <div className="mt-10 grid gap-px bg-[color:var(--hairline)] sm:grid-cols-2">
@@ -265,8 +277,8 @@ export default function HomePage() {
         <SectionHeader
           kicker="Flagship systems"
           index="§ 07"
-          title="Four systems, one standard of proof."
-          intro="Each is built around observable execution and inspectable evidence. Counts and statuses were verified at the commits noted in each case study."
+          title="Four systems I built"
+          intro="Each one is built around a single idea: make the system show its work. The counts and statuses below were read straight from each repository."
         />
         <div className="mt-14 flex flex-col gap-20">
           {systems.map((s) => (
@@ -284,12 +296,12 @@ export default function HomePage() {
           <SectionHeader
             kicker="Interactive demonstrations"
             index="§ 08"
-            title="See the idea run."
-            intro="Four small, deterministic playgrounds, no live model, no fake metrics. Each illustrates one system's core behaviour and can be reset."
+            title="See them run"
+            intro="Four small, deterministic playgrounds. No live model, no fake numbers. Each one shows how a system behaves, and you can reset it."
           />
-          <div className="mt-12 grid gap-6 lg:grid-cols-2">
+          <div className="mt-12 grid items-stretch gap-6 lg:grid-cols-2">
             {systems.map((s) => (
-              <Reveal key={s.slug}>
+              <Reveal key={s.slug} className="h-full">
                 <DemoLoader slug={s.slug} />
               </Reveal>
             ))}
@@ -300,9 +312,9 @@ export default function HomePage() {
       {/* 09, Professional engineering record */}
       <section id="record" className="shell scroll-mt-24 py-16 sm:py-24">
         <SectionHeader
-          kicker="Professional engineering record"
+          kicker="Experience"
           index="§ 09"
-          title="Where the systems shipped."
+          title="Production work"
         />
         <div className="mt-10 flex flex-col gap-10">
           {experience.map((job) => (
@@ -341,8 +353,8 @@ export default function HomePage() {
           <SectionHeader
             kicker="Research desk"
             index="§ 10"
-            title="External papers, connected to the work."
-            intro="A reading desk of external arXiv papers tied to each system, not Hari's publications. Metadata verified against the arXiv API."
+            title="Research I follow"
+            intro="External papers I read alongside the work. These are not my publications. Each one links to arXiv and to the system it connects to."
           />
           <div className="mt-8">
             {researchPreview.map((p) => (
@@ -365,8 +377,8 @@ export default function HomePage() {
         <SectionHeader
           kicker="Evidence archive"
           index="§ 11"
-          title="The receipts."
-          intro="Tests, CI, releases, and validators, the record behind the claims. Test volume alone does not prove quality; it is one signal among several."
+          title="Tests and releases"
+          intro="Tests, CI, releases, and validators: the record behind the claims. Test volume alone does not prove quality, but it is one signal worth showing."
         />
         <div className="mt-10">
           <EvidenceArchive />
@@ -379,7 +391,7 @@ export default function HomePage() {
           <SectionHeader
             kicker="Build artifacts"
             index="§ 12"
-            title="Architecture, not stock photos."
+            title="Build artifacts"
             intro="Diagrams generated from each system's verified source layout. Where a repository has a real screenshot, it appears on its case study."
           />
           <div className="mt-10">
@@ -393,8 +405,8 @@ export default function HomePage() {
         <SectionHeader
           kicker="Field notes"
           index="§ 13"
-          title="System briefs and release notes."
-          intro="Project-derived briefs and release notes, labeled honestly, never passed off as essays."
+          title="Notes"
+          intro="Briefs and release notes drawn from the project docs. Each one is labeled for what it is, not dressed up as an essay."
         />
         <div className="mt-8">
           {notes.map((note) => (
@@ -420,7 +432,7 @@ export default function HomePage() {
           <SectionHeader
             kicker="Earlier work"
             index="§ 14"
-            title="The archive, labeled honestly."
+            title="Earlier projects"
           />
           <Reveal stagger>
             <ul className="mt-8 border-t border-[color:var(--hairline)]">
@@ -431,8 +443,12 @@ export default function HomePage() {
                   className="grid grid-cols-1 gap-2 border-b border-[color:var(--hairline)] py-5 sm:grid-cols-[1fr_2fr_auto] sm:items-baseline sm:gap-6"
                 >
                   <div className="flex items-baseline gap-3">
-                    <span className="font-serif text-xl text-ink">{p.name}</span>
-                    <span className="stamp text-xs text-ink-muted">{p.period}</span>
+                    <span className="font-serif text-xl text-ink">
+                      {p.name}
+                    </span>
+                    <span className="stamp text-xs text-ink-muted">
+                      {p.period}
+                    </span>
                   </div>
                   <p className="text-sm text-ink-soft">{p.oneLiner}</p>
                   <div className="flex items-center gap-3 font-mono text-[0.66rem] tracking-[0.08em] uppercase">
@@ -466,7 +482,7 @@ export default function HomePage() {
 
       {/* 15, Education */}
       <section className="shell py-16">
-        <SectionHeader kicker="Education" index="§ 15" title="Foundations." />
+        <SectionHeader kicker="Education" index="§ 15" title="Education" />
         <div className="mt-8">
           {education.map((e) => (
             <Reveal key={e.id}>
@@ -475,10 +491,14 @@ export default function HomePage() {
                   {e.degree} {e.field}
                 </p>
                 <p className="text-ink-soft">
-                  {e.concentration ? `Concentration: ${e.concentration} · ` : ""}
+                  {e.concentration
+                    ? `Concentration: ${e.concentration} · `
+                    : ""}
                   {e.institution}, {e.location}
                 </p>
-                <p className="font-mono text-[0.72rem] text-ink-muted">{e.date}</p>
+                <p className="font-mono text-[0.72rem] text-ink-muted">
+                  {e.date}
+                </p>
               </div>
             </Reveal>
           ))}
@@ -488,21 +508,22 @@ export default function HomePage() {
       {/* 16 + 17, Human detail + Contact */}
       <section id="contact" className="shell scroll-mt-24 py-16 sm:py-24">
         <Reveal>
-          <p className="kicker">Open channel</p>
+          <p className="kicker">Contact</p>
           <hr className="rule-strong mt-3 mb-8" />
           <h2 className="display-lg max-w-[16ch] font-serif text-ink">
-            Building something that has to prove it works?
+            If it has to prove it works, I want to hear about it.
           </h2>
           <p className="measure mt-6 text-lg text-ink-soft">
-            Evaluation infrastructure, reliable agents, developer tools, retrieval
-            systems, or production AI, if that is the work, the channel is open.
+            Evaluation infrastructure, reliable agents, developer tools,
+            retrieval systems, or production AI: if that is the work, get in
+            touch.
           </p>
           <div className="mt-8 flex flex-wrap gap-x-4 gap-y-3">
             <Link
               href="/contact"
               className="border border-ink bg-ink px-5 py-2.5 font-mono text-[0.72rem] tracking-[0.1em] text-paper-elevated uppercase transition-opacity hover:opacity-85"
             >
-              Open channel
+              Get in touch
             </Link>
             <a
               href={`mailto:${contact.email}`}
@@ -511,9 +532,6 @@ export default function HomePage() {
               {contact.email}
             </a>
           </div>
-          <p className="mt-10 font-mono text-[0.7rem] tracking-[0.06em] text-ink-muted">
-            Status: shipping. Mood: caffeinated., i run on coffee. the code barely runs.
-          </p>
         </Reveal>
       </section>
     </>

@@ -66,13 +66,10 @@ export default function Footer() {
         <hr className="rule mt-14 mb-6" />
         <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
           <p className="font-mono text-xs tracking-[0.08em] text-ink-muted">
-            © {year} {siteConfig.legalName}. Built with evidence, not adjectives.
+            © {year} {siteConfig.legalName}
           </p>
-          <p
-            className="font-mono text-xs tracking-[0.08em] text-ink-muted"
-            title="straight from the source"
-          >
-            i run on coffee. the code barely runs.
+          <p className="font-mono text-xs tracking-[0.08em] text-ink-muted">
+            {siteConfig.locationShort}
           </p>
         </div>
       </div>

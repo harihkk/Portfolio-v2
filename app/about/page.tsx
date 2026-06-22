@@ -42,27 +42,33 @@ const PRINCIPLES = [
 const DOMAINS = [
   {
     title: "Evaluation & guardrails",
-    detail: "LLM-as-judge, golden datasets, execution-backed scoring, drift and hallucination monitoring.",
+    detail:
+      "LLM-as-judge, golden datasets, execution-backed scoring, drift and hallucination monitoring.",
   },
   {
     title: "Agents & tool use",
-    detail: "Bounded action spaces, structured intent, evidence-gated completion, recovery and fallback.",
+    detail:
+      "Bounded action spaces, structured intent, evidence-gated completion, recovery and fallback.",
   },
   {
     title: "Retrieval & RAG",
-    detail: "Hybrid vector + lexical retrieval, reranking, domain embeddings, recall-quality ownership.",
+    detail:
+      "Hybrid vector + lexical retrieval, reranking, domain embeddings, recall-quality ownership.",
   },
   {
     title: "Model serving & optimization",
-    detail: "LoRA fine-tuning, ONNX/TensorRT, quantization, batching, latency at scale.",
+    detail:
+      "LoRA fine-tuning, ONNX/TensorRT, quantization, batching, latency at scale.",
   },
   {
     title: "Backend & full-stack",
-    detail: "Kotlin/Spring Boot, FastAPI, GraphQL, React/TypeScript, the API down to the client.",
+    detail:
+      "Kotlin/Spring Boot, FastAPI, GraphQL, React/TypeScript, the API down to the client.",
   },
   {
     title: "MLOps & infrastructure",
-    detail: "CI/CD, Kubernetes, model versioning and rollback, experiment tracking, observability.",
+    detail:
+      "CI/CD, Kubernetes, model versioning and rollback, experiment tracking, observability.",
   },
 ];
 
@@ -71,7 +77,9 @@ export default function AboutPage() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(profilePageJsonLd()) }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(profilePageJsonLd()),
+        }}
       />
       <PageHeader
         kicker="About"
@@ -87,22 +95,23 @@ export default function AboutPage() {
               <p className="kicker mb-2">Engineering philosophy</p>
               <p className="text-lg text-ink-soft">{profile.thesis}</p>
               <p className="mt-4 text-ink-soft">
-                The throughline across Hari&rsquo;s work is a distrust of output taken at
-                face value. A model can produce a fluent code review, a confident
-                browser action, a clean-looking benchmark score, and be wrong in
-                each. The interesting engineering is the layer that checks: the patch
-                that has to apply and pass, the action that has to be provable from
-                the page, the brief built only from what actually ran, the
-                contamination score that keeps its caveats attached.
+                The throughline across my work is a distrust of output taken at
+                face value. A model can produce a fluent code review, a
+                confident browser action, a clean-looking benchmark score, and
+                be wrong in each. The interesting engineering is the layer that
+                checks: the patch that has to apply and pass, the action that
+                has to be provable from the page, the brief built only from what
+                actually ran, the contamination score that keeps its caveats
+                attached.
               </p>
               <p className="mt-4 text-ink-soft">
-                That instinct was earned across roles. Forecasting systems at Infinite
-                Infolab meant validation, backtesting, and drift monitoring before a
-                number could be trusted. Production AI at Morgan Stanley meant owning
-                retrieval quality, evaluation, guardrails, and reliability, not just
-                shipping a model. The independent systems push the same idea further:
-                evaluation, agent reliability, and developer tooling built so the
-                evidence is the product.
+                I earned that instinct across roles. Forecasting at Infinite
+                Infolab meant validation, backtesting, and drift monitoring
+                before I trusted a number. Production work at Morgan Stanley
+                meant owning retrieval quality, evaluation, guardrails, and
+                reliability, not just shipping a model. My own projects push the
+                same idea further: evaluation, agent reliability, and developer
+                tooling, built so the evidence is easy to inspect.
               </p>
             </div>
           </Reveal>
@@ -113,7 +122,7 @@ export default function AboutPage() {
       </section>
 
       <section className="shell py-12">
-        <SectionHeader kicker="Working principles" title="How the work gets made." />
+        <SectionHeader kicker="Working principles" title="How I work" />
         <Reveal stagger>
           <ol className="mt-10 grid gap-px bg-[color:var(--hairline)] sm:grid-cols-2 lg:grid-cols-3">
             {PRINCIPLES.map((p, i) => (
