@@ -1,6 +1,8 @@
 import { test, expect } from "@playwright/test";
 
-test("contact form validates and offers a mailto fallback", async ({ page }) => {
+test("contact form validates and offers a mailto fallback", async ({
+  page,
+}) => {
   await page.goto("/contact");
   await page.getByRole("button", { name: /send message/i }).click();
   await expect(page.getByText(/your name is required/i)).toBeVisible();
@@ -77,7 +79,10 @@ test("desktop navigation moves between routes", async ({ page }, testInfo) => {
   test.skip(testInfo.project.name === "mobile", "desktop-only");
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  await page.getByRole("navigation", { name: "Primary" }).getByRole("link", { name: "Research" }).click();
+  await page
+    .getByRole("navigation", { name: "Primary" })
+    .getByRole("link", { name: "Research" })
+    .click();
   await expect(page).toHaveURL(/\/research$/);
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 });

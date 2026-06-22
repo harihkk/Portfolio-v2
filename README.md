@@ -16,13 +16,13 @@ npm run verify     # lint + typecheck + unit tests + production build
 npm run test:e2e   # Playwright (Chromium + mobile); needs the browser installed
 ```
 
-| Script | Does |
-|---|---|
-| `dev` / `build` / `start` | Next dev / production build / serve |
-| `lint` · `typecheck` · `test` | ESLint · `tsc --noEmit` · Vitest |
-| `test:e2e` | Playwright e2e + a11y + screenshots |
-| `format` · `format:check` | Prettier |
-| `verify` | lint → typecheck → test → build (the automated gate) |
+| Script                        | Does                                                 |
+| ----------------------------- | ---------------------------------------------------- |
+| `dev` / `build` / `start`     | Next dev / production build / serve                  |
+| `lint` · `typecheck` · `test` | ESLint · `tsc --noEmit` · Vitest                     |
+| `test:e2e`                    | Playwright e2e + a11y + screenshots                  |
+| `format` · `format:check`     | Prettier                                             |
+| `verify`                      | lint → typecheck → test → build (the automated gate) |
 
 First run for browsers: `npx playwright install chromium` (and `firefox webkit` for full cross-browser).
 

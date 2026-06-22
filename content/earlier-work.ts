@@ -45,7 +45,13 @@ const data: EarlierWork[] = [
     period: "2024",
     oneLiner:
       "An end-to-end MLOps RAG chatbot over Northeastern's Research Computing documentation, scraping, indexing, Airflow orchestration, DVC, and MLflow.",
-    technologies: ["Streamlit", "Azure Cognitive Search", "Airflow", "DVC", "MLflow"],
+    technologies: [
+      "Streamlit",
+      "Azure Cognitive Search",
+      "Airflow",
+      "DVC",
+      "MLflow",
+    ],
     status: "archived",
     label: "Academic · archived",
     repo: "https://github.com/harihkk/AskRC",
@@ -69,7 +75,13 @@ const data: EarlierWork[] = [
     period: "2025",
     oneLiner:
       "A text-to-video pipeline that turns a topic into a captioned short, AI script, generated images, voiceover, and Remotion rendering.",
-    technologies: ["Next.js", "Remotion", "Gemini", "Replicate", "Neon / Drizzle"],
+    technologies: [
+      "Next.js",
+      "Remotion",
+      "Gemini",
+      "Replicate",
+      "Neon / Drizzle",
+    ],
     status: "historical",
     label: "Historical",
     repo: "https://github.com/harihkk/Visioncraft",

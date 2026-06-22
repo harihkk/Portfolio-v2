@@ -56,7 +56,12 @@ describe("metrics", () => {
 describe("systems", () => {
   it("has exactly the four flagship slugs", () => {
     expect(systemSlugs.sort()).toEqual(
-      ["code-review-arena", "contamcheckr", "debugbrief", "helm-browser-agent"].sort(),
+      [
+        "code-review-arena",
+        "contamcheckr",
+        "debugbrief",
+        "helm-browser-agent",
+      ].sort(),
     );
   });
   it("every system has limitations stated and a verified commit", () => {
@@ -98,7 +103,9 @@ describe("archive + experience", () => {
     expect(ii?.role).toBe("Machine Learning Engineer");
   });
   it("earlier work omits weather-dashboard and only shows verified live links", () => {
-    expect(earlierWork.find((p) => p.name === "weather-dashboard")).toBeUndefined();
+    expect(
+      earlierWork.find((p) => p.name === "weather-dashboard"),
+    ).toBeUndefined();
     for (const p of earlierWork) {
       if (p.live) expect(p.liveVerified).toBe(true);
     }

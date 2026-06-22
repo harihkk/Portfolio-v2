@@ -19,7 +19,8 @@ import {
 const data: ResearchPaper[] = [
   {
     slug: "webarena",
-    title: "WebArena: A Realistic Web Environment for Building Autonomous Agents",
+    title:
+      "WebArena: A Realistic Web Environment for Building Autonomous Agents",
     authors: [
       "Shuyan Zhou",
       "Frank F. Xu",
@@ -39,34 +40,34 @@ const data: ResearchPaper[] = [
     latestRevision: "2024-04-16",
     arxivUrl: "https://arxiv.org/abs/2307.13854",
     primaryCategory: "cs.AI",
-    abstract: "Introduces a self-hostable, reproducible web environment with functional websites (e-commerce, forums, content management, collaboration tools) plus realistic tasks and outcome-based functional-correctness checks for evaluating autonomous agents that operate a browser.",
+    abstract:
+      "Introduces a self-hostable, reproducible web environment with functional websites (e-commerce, forums, content management, collaboration tools) plus realistic tasks and outcome-based functional-correctness checks for evaluating autonomous agents that operate a browser.",
     recordType: "READING",
     authoredByHari: false,
     connectedSystem: "helm-browser-agent",
     connectedTopic: "browser agents / web interaction",
-    relationship: "Provides a reproducible task suite and functional-correctness evaluation harness that a browser-agent evaluation system can adopt as a baseline environment and scoring methodology.",
+    relationship:
+      "Provides a reproducible task suite and functional-correctness evaluation harness that a browser-agent evaluation system can adopt as a baseline environment and scoring methodology.",
     verifiedAt: "2026-06-21",
   },
   {
     slug: "webshop",
-    title: "WebShop: Towards Scalable Real-World Web Interaction with Grounded Language Agents",
-    authors: [
-      "Shunyu Yao",
-      "Howard Chen",
-      "John Yang",
-      "Karthik Narasimhan",
-    ],
+    title:
+      "WebShop: Towards Scalable Real-World Web Interaction with Grounded Language Agents",
+    authors: ["Shunyu Yao", "Howard Chen", "John Yang", "Karthik Narasimhan"],
     arxivId: "2207.01206",
     submittedDate: "2022-07-04",
     latestRevision: "2023-02-08",
     arxivUrl: "https://arxiv.org/abs/2207.01206",
     primaryCategory: "cs.CL",
-    abstract: "Presents a simulated e-commerce shopping environment with many products and crowdsourced instructions where agents must search, navigate, and act on web pages to fulfill purchase goals, evaluated against reward signals and human performance.",
+    abstract:
+      "Presents a simulated e-commerce shopping environment with many products and crowdsourced instructions where agents must search, navigate, and act on web pages to fulfill purchase goals, evaluated against reward signals and human performance.",
     recordType: "READING",
     authoredByHari: false,
     connectedSystem: "helm-browser-agent",
     connectedTopic: "browser agents / web interaction",
-    relationship: "Demonstrates grounded web interaction with reward-based scoring, useful as a reference design for task definition and reward shaping in a browser-agent evaluation pipeline.",
+    relationship:
+      "Demonstrates grounded web interaction with reward-based scoring, useful as a reference design for task definition and reward shaping in a browser-agent evaluation pipeline.",
     verifiedAt: "2026-06-21",
   },
   {
@@ -87,12 +88,14 @@ const data: ResearchPaper[] = [
     latestRevision: "2023-12-09",
     arxivUrl: "https://arxiv.org/abs/2306.06070",
     primaryCategory: "cs.CL",
-    abstract: "Offers a dataset of real-website tasks across many domains with recorded action sequences, intended to train and evaluate generalist agents that follow instructions to operate live web pages.",
+    abstract:
+      "Offers a dataset of real-website tasks across many domains with recorded action sequences, intended to train and evaluate generalist agents that follow instructions to operate live web pages.",
     recordType: "READING",
     authoredByHari: false,
     connectedSystem: "helm-browser-agent",
     connectedTopic: "browser agents / web interaction",
-    relationship: "Supplies real-website trajectories and element-selection metrics that can inform how a browser-agent harness measures action prediction and step accuracy across diverse sites.",
+    relationship:
+      "Supplies real-website trajectories and element-selection metrics that can inform how a browser-agent harness measures action prediction and step accuracy across diverse sites.",
     verifiedAt: "2026-06-21",
   },
   {
@@ -127,17 +130,20 @@ const data: ResearchPaper[] = [
     latestRevision: "2025-10-04",
     arxivUrl: "https://arxiv.org/abs/2308.03688",
     primaryCategory: "cs.AI",
-    abstract: "A multi-environment benchmark spanning interactive settings such as operating systems, databases, web browsing, and games to measure how well language models act as reasoning and decision-making agents over multiple turns.",
+    abstract:
+      "A multi-environment benchmark spanning interactive settings such as operating systems, databases, web browsing, and games to measure how well language models act as reasoning and decision-making agents over multiple turns.",
     recordType: "READING",
     authoredByHari: false,
     connectedSystem: "general",
     connectedTopic: "agent evaluation",
-    relationship: "Establishes a multi-task framework and aggregate scoring conventions that a general agent-evaluation effort can reuse for cross-environment comparison.",
+    relationship:
+      "Establishes a multi-task framework and aggregate scoring conventions that a general agent-evaluation effort can reuse for cross-environment comparison.",
     verifiedAt: "2026-06-21",
   },
   {
     slug: "agentboard",
-    title: "AgentBoard: An Analytical Evaluation Board of Multi-turn LLM Agents",
+    title:
+      "AgentBoard: An Analytical Evaluation Board of Multi-turn LLM Agents",
     authors: [
       "Chang Ma",
       "Junlei Zhang",
@@ -154,12 +160,14 @@ const data: ResearchPaper[] = [
     latestRevision: "2024-12-23",
     arxivUrl: "https://arxiv.org/abs/2401.13178",
     primaryCategory: "cs.CL",
-    abstract: "Proposes an analytical evaluation framework with fine-grained progress metrics and an interactive board for diagnosing where multi-turn agents succeed or fail across partially observable tasks, beyond final success rates.",
+    abstract:
+      "Proposes an analytical evaluation framework with fine-grained progress metrics and an interactive board for diagnosing where multi-turn agents succeed or fail across partially observable tasks, beyond final success rates.",
     recordType: "READING",
     authoredByHari: false,
     connectedSystem: "general",
     connectedTopic: "agent evaluation",
-    relationship: "Introduces progress-rate and subgoal diagnostics that a general agent-evaluation system can adopt to surface partial-credit signals rather than only pass/fail outcomes.",
+    relationship:
+      "Introduces progress-rate and subgoal diagnostics that a general agent-evaluation system can adopt to surface partial-credit signals rather than only pass/fail outcomes.",
     verifiedAt: "2026-06-21",
   },
   {
@@ -179,34 +187,33 @@ const data: ResearchPaper[] = [
     latestRevision: "2024-11-11",
     arxivUrl: "https://arxiv.org/abs/2310.06770",
     primaryCategory: "cs.CL",
-    abstract: "Constructs a benchmark from real GitHub issues and pull requests where a model must produce a patch that makes a repository's test suite pass, evaluating end-to-end software issue resolution against hidden tests.",
+    abstract:
+      "Constructs a benchmark from real GitHub issues and pull requests where a model must produce a patch that makes a repository's test suite pass, evaluating end-to-end software issue resolution against hidden tests.",
     recordType: "READING",
     authoredByHari: false,
     connectedSystem: "code-review-arena",
     connectedTopic: "code-generation or code-repair evaluation",
-    relationship: "Defines the patch-against-tests evaluation pattern central to a code-repair arena, including repository setup and test-based verification of generated fixes.",
+    relationship:
+      "Defines the patch-against-tests evaluation pattern central to a code-repair arena, including repository setup and test-based verification of generated fixes.",
     verifiedAt: "2026-06-21",
   },
   {
     slug: "self-debug",
     title: "Teaching Large Language Models to Self-Debug",
-    authors: [
-      "Xinyun Chen",
-      "Maxwell Lin",
-      "Nathanael Schärli",
-      "Denny Zhou",
-    ],
+    authors: ["Xinyun Chen", "Maxwell Lin", "Nathanael Schärli", "Denny Zhou"],
     arxivId: "2304.05128",
     submittedDate: "2023-04-11",
     latestRevision: "2023-10-05",
     arxivUrl: "https://arxiv.org/abs/2304.05128",
     primaryCategory: "cs.CL",
-    abstract: "Describes a prompting approach in which a model inspects its own generated code, explains it, and uses execution feedback to iteratively diagnose and correct errors without additional supervision.",
+    abstract:
+      "Describes a prompting approach in which a model inspects its own generated code, explains it, and uses execution feedback to iteratively diagnose and correct errors without additional supervision.",
     recordType: "READING",
     authoredByHari: false,
     connectedSystem: "code-review-arena",
     connectedTopic: "debugging / software observability",
-    relationship: "Provides an execution-feedback self-correction loop that a code-repair arena can integrate as an iterative fix strategy and as a baseline for measuring repair effectiveness.",
+    relationship:
+      "Provides an execution-feedback self-correction loop that a code-repair arena can integrate as an iterative fix strategy and as a baseline for measuring repair effectiveness.",
     verifiedAt: "2026-06-21",
   },
   {
@@ -277,17 +284,20 @@ const data: ResearchPaper[] = [
     latestRevision: "2021-07-14",
     arxivUrl: "https://arxiv.org/abs/2107.03374",
     primaryCategory: "cs.LG",
-    abstract: "Introduces the Codex code model and the HumanEval problem set, evaluating functional correctness of generated programs via unit tests and the pass@k metric rather than text similarity.",
+    abstract:
+      "Introduces the Codex code model and the HumanEval problem set, evaluating functional correctness of generated programs via unit tests and the pass@k metric rather than text similarity.",
     recordType: "READING",
     authoredByHari: false,
     connectedSystem: "code-review-arena",
     connectedTopic: "code-generation or code-repair evaluation",
-    relationship: "Originates the pass@k functional-correctness metric and unit-test execution methodology that underpin how generated or repaired code is scored in a code arena.",
+    relationship:
+      "Originates the pass@k functional-correctness metric and unit-test execution methodology that underpin how generated or repaired code is scored in a code arena.",
     verifiedAt: "2026-06-21",
   },
   {
     slug: "livecodebench",
-    title: "LiveCodeBench: Holistic and Contamination Free Evaluation of Large Language Models for Code",
+    title:
+      "LiveCodeBench: Holistic and Contamination Free Evaluation of Large Language Models for Code",
     authors: [
       "Naman Jain",
       "King Han",
@@ -305,17 +315,20 @@ const data: ResearchPaper[] = [
     latestRevision: "2024-06-06",
     arxivUrl: "https://arxiv.org/abs/2403.07974",
     primaryCategory: "cs.SE",
-    abstract: "Builds a continuously updated coding benchmark that collects problems released over time with known dates, enabling contamination-free evaluation by testing models only on problems published after their training cutoff, across tasks like generation, self-repair, and test prediction.",
+    abstract:
+      "Builds a continuously updated coding benchmark that collects problems released over time with known dates, enabling contamination-free evaluation by testing models only on problems published after their training cutoff, across tasks like generation, self-repair, and test prediction.",
     recordType: "READING",
     authoredByHari: false,
     connectedSystem: "contamcheckr",
     connectedTopic: "benchmark contamination",
-    relationship: "Demonstrates a release-date-windowing strategy for avoiding train-test overlap that a contamination checker can apply to keep code evaluations untainted.",
+    relationship:
+      "Demonstrates a release-date-windowing strategy for avoiding train-test overlap that a contamination checker can apply to keep code evaluations untainted.",
     verifiedAt: "2026-06-21",
   },
   {
     slug: "rephrased-contamination",
-    title: "Rethinking Benchmark and Contamination for Language Models with Rephrased Samples",
+    title:
+      "Rethinking Benchmark and Contamination for Language Models with Rephrased Samples",
     authors: [
       "Shuo Yang",
       "Wei-Lin Chiang",
@@ -328,34 +341,34 @@ const data: ResearchPaper[] = [
     latestRevision: "2023-11-11",
     arxivUrl: "https://arxiv.org/abs/2311.04850",
     primaryCategory: "cs.CL",
-    abstract: "Shows that paraphrased or translated copies of benchmark items can evade standard n-gram overlap contamination checks while still inflating scores, and proposes a stronger LLM-based detector to catch such rephrased contamination.",
+    abstract:
+      "Shows that paraphrased or translated copies of benchmark items can evade standard n-gram overlap contamination checks while still inflating scores, and proposes a stronger LLM-based detector to catch such rephrased contamination.",
     recordType: "READING",
     authoredByHari: false,
     connectedSystem: "contamcheckr",
     connectedTopic: "benchmark contamination",
-    relationship: "Directly motivates detection logic for a contamination checker by exposing the limits of surface n-gram matching and offering a semantic-similarity detection alternative.",
+    relationship:
+      "Directly motivates detection logic for a contamination checker by exposing the limits of surface n-gram matching and offering a semantic-similarity detection alternative.",
     verifiedAt: "2026-06-21",
   },
   {
     slug: "plain-text-test-data",
-    title: "Stop Uploading Test Data in Plain Text: Practical Strategies for Mitigating Data Contamination by Evaluation Benchmarks",
-    authors: [
-      "Alon Jacovi",
-      "Avi Caciularu",
-      "Omer Goldman",
-      "Yoav Goldberg",
-    ],
+    title:
+      "Stop Uploading Test Data in Plain Text: Practical Strategies for Mitigating Data Contamination by Evaluation Benchmarks",
+    authors: ["Alon Jacovi", "Avi Caciularu", "Omer Goldman", "Yoav Goldberg"],
     arxivId: "2305.10160",
     submittedDate: "2023-05-17",
     latestRevision: "2023-10-18",
     arxivUrl: "https://arxiv.org/abs/2305.10160",
     primaryCategory: "cs.CL",
-    abstract: "Argues that public plain-text test sets leak into training corpora and recommends practical mitigations such as encryption, holding out data, and gating access to reduce future benchmark contamination.",
+    abstract:
+      "Argues that public plain-text test sets leak into training corpora and recommends practical mitigations such as encryption, holding out data, and gating access to reduce future benchmark contamination.",
     recordType: "READING",
     authoredByHari: false,
     connectedSystem: "contamcheckr",
     connectedTopic: "benchmark contamination",
-    relationship: "Frames preventive practices (encryption, access control, canary strings) that a contamination checker and its data-handling policies can operationalize.",
+    relationship:
+      "Frames preventive practices (encryption, access control, canary strings) that a contamination checker and its data-handling policies can operationalize.",
     verifiedAt: "2026-06-21",
   },
   {
@@ -372,17 +385,20 @@ const data: ResearchPaper[] = [
     latestRevision: "2025-04-28",
     arxivUrl: "https://arxiv.org/abs/2309.15217",
     primaryCategory: "cs.CL",
-    abstract: "Proposes a reference-free framework that scores retrieval-augmented systems on dimensions like faithfulness, answer relevance, and context relevance using model-based judgments, allowing evaluation without hand-written ground truth.",
+    abstract:
+      "Proposes a reference-free framework that scores retrieval-augmented systems on dimensions like faithfulness, answer relevance, and context relevance using model-based judgments, allowing evaluation without hand-written ground truth.",
     recordType: "READING",
     authoredByHari: false,
     connectedSystem: "general",
     connectedTopic: "retrieval evaluation",
-    relationship: "Supplies reference-free retrieval and grounding metrics that a general evaluation system can adopt to assess context quality and answer faithfulness in RAG pipelines.",
+    relationship:
+      "Supplies reference-free retrieval and grounding metrics that a general evaluation system can adopt to assess context quality and answer faithfulness in RAG pipelines.",
     verifiedAt: "2026-06-21",
   },
   {
     slug: "toolllm",
-    title: "ToolLLM: Facilitating Large Language Models to Master 16000+ Real-world APIs",
+    title:
+      "ToolLLM: Facilitating Large Language Models to Master 16000+ Real-world APIs",
     authors: [
       "Yujia Qin",
       "Shihao Liang",
@@ -409,12 +425,14 @@ const data: ResearchPaper[] = [
     latestRevision: "2023-10-03",
     arxivUrl: "https://arxiv.org/abs/2307.16789",
     primaryCategory: "cs.AI",
-    abstract: "Presents instruction data and a training plus evaluation pipeline covering thousands of real REST APIs, including a multi-step solution-search method and an automatic evaluator for judging whether tool-calling trajectories complete tasks.",
+    abstract:
+      "Presents instruction data and a training plus evaluation pipeline covering thousands of real REST APIs, including a multi-step solution-search method and an automatic evaluator for judging whether tool-calling trajectories complete tasks.",
     recordType: "READING",
     authoredByHari: false,
     connectedSystem: "helm-browser-agent",
     connectedTopic: "reliable tool use",
-    relationship: "Offers an automatic evaluator and large API-calling task set that a reliable-tool-use harness can reuse to measure correct tool selection and multi-step API execution.",
+    relationship:
+      "Offers an automatic evaluator and large API-calling task set that a reliable-tool-use harness can reuse to measure correct tool selection and multi-step API execution.",
     verifiedAt: "2026-06-21",
   },
   {
@@ -436,12 +454,14 @@ const data: ResearchPaper[] = [
     latestRevision: "2023-10-25",
     arxivUrl: "https://arxiv.org/abs/2304.08244",
     primaryCategory: "cs.CL",
-    abstract: "Introduces a benchmark with executable API calls and graded dialogue scenarios that test whether a model can decide when to call a tool, retrieve the right API, and invoke it correctly, along with metrics for each capability.",
+    abstract:
+      "Introduces a benchmark with executable API calls and graded dialogue scenarios that test whether a model can decide when to call a tool, retrieve the right API, and invoke it correctly, along with metrics for each capability.",
     recordType: "READING",
     authoredByHari: false,
     connectedSystem: "helm-browser-agent",
     connectedTopic: "reliable tool use",
-    relationship: "Provides per-step tool-use metrics (call decision, retrieval, correct invocation) that a reliable-tool-use evaluation can adopt to pinpoint where tool calls break down.",
+    relationship:
+      "Provides per-step tool-use metrics (call decision, retrieval, correct invocation) that a reliable-tool-use evaluation can adopt to pinpoint where tool calls break down.",
     verifiedAt: "2026-06-21",
   },
 ];

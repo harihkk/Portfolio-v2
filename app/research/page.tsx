@@ -35,10 +35,10 @@ export default function ResearchPage() {
               Reserved for authored work.
             </h2>
             <p className="measure mt-3 text-ink-soft">
-              This space is held for preprints authored by Hari. It
-              stays empty by design, no manuscript is claimed until a real,
-              author-verified one exists. The reading desk above is curated
-              external work, not authorship.
+              This space is held for preprints authored by Hari. It stays empty
+              by design, no manuscript is claimed until a real, author-verified
+              one exists. The reading desk above is curated external work, not
+              authorship.
             </p>
           </div>
         </Reveal>

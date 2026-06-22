@@ -15,7 +15,9 @@ export default function FlagshipEntry({ system }: { system: System }) {
     <article className="border-t-2 border-ink pt-8">
       <Reveal>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <span className="stamp text-3xl text-signal-dark">{system.index}</span>
+          <span className="stamp text-3xl text-signal-dark">
+            {system.index}
+          </span>
           <StatusTag status={system.status} />
           <span className="font-mono text-[0.7rem] tracking-[0.1em] text-ink-muted uppercase">
             {system.domains.join(" · ").replace(/-/g, " ")}

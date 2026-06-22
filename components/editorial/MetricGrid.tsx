@@ -8,7 +8,11 @@ export default function MetricGrid() {
     <Reveal stagger>
       <ul className="grid grid-cols-2 gap-px bg-[color:var(--hairline)] sm:grid-cols-3">
         {approvedMetrics.map((m) => (
-          <li key={m.id} data-reveal-item className="flex flex-col bg-paper p-5">
+          <li
+            key={m.id}
+            data-reveal-item
+            className="flex flex-col bg-paper p-5"
+          >
             <span className="font-serif text-4xl text-ink tnum sm:text-5xl">
               <CountUp
                 value={m.value}
@@ -18,7 +22,9 @@ export default function MetricGrid() {
                 animate={m.animate}
               />
             </span>
-            <span className="mt-3 text-sm leading-snug text-ink-soft">{m.label}</span>
+            <span className="mt-3 text-sm leading-snug text-ink-soft">
+              {m.label}
+            </span>
             {m.detail ? (
               <span className="mt-1.5 font-mono text-[0.66rem] leading-snug text-ink-muted">
                 {m.detail}

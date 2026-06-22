@@ -44,7 +44,9 @@ export default function SystemsPage() {
               >
                 <div className="flex items-baseline gap-3">
                   <span className="font-serif text-xl text-ink">{p.name}</span>
-                  <span className="stamp text-xs text-ink-muted">{p.period}</span>
+                  <span className="stamp text-xs text-ink-muted">
+                    {p.period}
+                  </span>
                 </div>
                 <p className="text-sm text-ink-soft">{p.oneLiner}</p>
                 <div className="flex items-center gap-3 font-mono text-[0.66rem] tracking-[0.08em] uppercase">

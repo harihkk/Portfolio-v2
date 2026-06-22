@@ -60,7 +60,8 @@ const records: z.input<typeof provenanceRecordSchema>[] = [
     sourceLocation: "Hari_K_Resume_AI_SWE.pdf, Morgan Stanley bullet 1",
     verifiedAt: VERIFIED,
     publicApproved: true,
-    notes: "Employer metric from Hari's own résumé. Listed for sign-off in docs/public-content-review.md.",
+    notes:
+      "Employer metric from Hari's own résumé. Listed for sign-off in docs/public-content-review.md.",
   },
   {
     id: "ms-research-time",
@@ -187,7 +188,8 @@ const records: z.input<typeof provenanceRecordSchema>[] = [
     sourceLocation: "code-review-arena README.md @ 656b401",
     verifiedAt: VERIFIED,
     publicApproved: true,
-    notes: "Documented worked example in the README. Presented as the project's stated example, not a fresh run.",
+    notes:
+      "Documented worked example in the README. Presented as the project's stated example, not a fresh run.",
   },
 
   // ----------------------------------------------------- Helm Browser Agent
@@ -195,7 +197,8 @@ const records: z.input<typeof provenanceRecordSchema>[] = [
     id: "helm-tests",
     text: "192 test functions across 16 files, including 40 URL/SSRF policy tests.",
     sourceType: "tests-ci",
-    sourceLocation: "Helm-browser-agent tests/unit @ 784af0a (grep -rE 'def test_')",
+    sourceLocation:
+      "Helm-browser-agent tests/unit @ 784af0a (grep -rE 'def test_')",
     verifiedAt: VERIFIED,
     publicApproved: true,
   },
@@ -211,7 +214,8 @@ const records: z.input<typeof provenanceRecordSchema>[] = [
     id: "helm-completion",
     text: "A task is reported completed only when a validator can prove the outcome from the visible page; otherwise it ends 'unverified' or a structured 'blocked'.",
     sourceType: "repo-docs",
-    sourceLocation: "Helm-browser-agent README.md + core/validators.py @ 784af0a",
+    sourceLocation:
+      "Helm-browser-agent README.md + core/validators.py @ 784af0a",
     verifiedAt: VERIFIED,
     publicApproved: true,
   },
@@ -229,7 +233,8 @@ const records: z.input<typeof provenanceRecordSchema>[] = [
     id: "db-pypi",
     text: "Published on PyPI as debugbrief, version 1.3.0 (three releases, v1.1.0-v1.3.0).",
     sourceType: "github-release",
-    sourceLocation: "pypi.org/project/debugbrief + Debug-Brief releases @ d5c1df6",
+    sourceLocation:
+      "pypi.org/project/debugbrief + Debug-Brief releases @ d5c1df6",
     verifiedAt: VERIFIED,
     publicApproved: true,
   },
@@ -263,7 +268,8 @@ const records: z.input<typeof provenanceRecordSchema>[] = [
     id: "cc-tests",
     text: "30 test functions across 7 files.",
     sourceType: "tests-ci",
-    sourceLocation: "contamination-checker tests/ @ fbbc85e (grep -rE 'def test_')",
+    sourceLocation:
+      "contamination-checker tests/ @ fbbc85e (grep -rE 'def test_')",
     verifiedAt: VERIFIED,
     publicApproved: true,
   },
@@ -271,7 +277,8 @@ const records: z.input<typeof provenanceRecordSchema>[] = [
     id: "cc-bands",
     text: "Combines guided overlap, control-calibrated Min-K%++, and a canonical-order permutation test into a caveated evidence score (low/moderate/high bands), not a membership verdict.",
     sourceType: "repo-docs",
-    sourceLocation: "contamination-checker README.md + calibration.py @ fbbc85e",
+    sourceLocation:
+      "contamination-checker README.md + calibration.py @ fbbc85e",
     verifiedAt: VERIFIED,
     publicApproved: true,
   },
@@ -279,7 +286,8 @@ const records: z.input<typeof provenanceRecordSchema>[] = [
     id: "cc-not-pypi",
     text: "ContamCheckr is installed from source and is not published to PyPI.",
     sourceType: "package-metadata",
-    sourceLocation: "pypi.org/pypi/contamcheckr/json → 404 (checked 2026-06-21)",
+    sourceLocation:
+      "pypi.org/pypi/contamcheckr/json → 404 (checked 2026-06-21)",
     verifiedAt: VERIFIED,
     publicApproved: true,
     notes: "Recorded to PREVENT a false 'available on PyPI' claim.",
@@ -298,7 +306,8 @@ const records: z.input<typeof provenanceRecordSchema>[] = [
     id: "agg-systems",
     text: "Four flagship engineering systems.",
     sourceType: "repo-code",
-    sourceLocation: "github.com/harihkk, code-review-arena, Helm-browser-agent, Debug-Brief, contamination-checker",
+    sourceLocation:
+      "github.com/harihkk, code-review-arena, Helm-browser-agent, Debug-Brief, contamination-checker",
     verifiedAt: VERIFIED,
     publicApproved: true,
   },
@@ -312,7 +321,8 @@ const records: z.input<typeof provenanceRecordSchema>[] = [
     sourceLocation: "harihkk.github.io (old site), not on current résumé",
     verifiedAt: VERIFIED,
     publicApproved: false,
-    notes: "Not on the current résumé. Held until Hari confirms role, dates, and whether to show.",
+    notes:
+      "Not on the current résumé. Held until Hari confirms role, dates, and whether to show.",
   },
   {
     id: "held-rlogical",
@@ -327,10 +337,12 @@ const records: z.input<typeof provenanceRecordSchema>[] = [
     id: "held-undergrad",
     text: "Undergraduate degree and dates.",
     sourceType: "external",
-    sourceLocation: "Not present in résumé; Northeastern grad email implies prior study",
+    sourceLocation:
+      "Not present in résumé; Northeastern grad email implies prior study",
     verifiedAt: VERIFIED,
     publicApproved: false,
-    notes: "No verified source. Held until Hari supplies degree, institution, and dates.",
+    notes:
+      "No verified source. Held until Hari supplies degree, institution, and dates.",
   },
   {
     id: "held-linkedin",

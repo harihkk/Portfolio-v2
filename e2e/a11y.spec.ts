@@ -30,7 +30,11 @@ test.describe("accessibility (axe, WCAG 2 A/AA)", () => {
         console.log(
           `A11Y ${route} ` +
             JSON.stringify(
-              serious.map((v) => ({ id: v.id, impact: v.impact, n: v.nodes.length })),
+              serious.map((v) => ({
+                id: v.id,
+                impact: v.impact,
+                n: v.nodes.length,
+              })),
             ),
         );
       }

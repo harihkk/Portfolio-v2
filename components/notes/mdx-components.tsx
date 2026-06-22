@@ -13,10 +13,16 @@ export const mdxComponents = {
     <p className="mb-4 text-ink-soft" {...props} />
   ),
   ul: (props: ComponentPropsWithoutRef<"ul">) => (
-    <ul className="mb-4 flex list-disc flex-col gap-2 pl-5 text-ink-soft" {...props} />
+    <ul
+      className="mb-4 flex list-disc flex-col gap-2 pl-5 text-ink-soft"
+      {...props}
+    />
   ),
   ol: (props: ComponentPropsWithoutRef<"ol">) => (
-    <ol className="mb-4 flex list-decimal flex-col gap-2 pl-5 text-ink-soft" {...props} />
+    <ol
+      className="mb-4 flex list-decimal flex-col gap-2 pl-5 text-ink-soft"
+      {...props}
+    />
   ),
   li: (props: ComponentPropsWithoutRef<"li">) => (
     <li className="pl-1 leading-relaxed" {...props} />
@@ -45,7 +51,13 @@ export const mdxComponents = {
   ),
   a: ({ href = "", ...props }: ComponentPropsWithoutRef<"a">) => {
     if (href.startsWith("/")) {
-      return <Link href={href} className="link-annotate text-signal-dark" {...props} />;
+      return (
+        <Link
+          href={href}
+          className="link-annotate text-signal-dark"
+          {...props}
+        />
+      );
     }
     return (
       <a

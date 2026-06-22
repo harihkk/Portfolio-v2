@@ -5,11 +5,15 @@ import type { ResearchPaper } from "@/lib/validation";
 import PaperCard from "@/components/research/PaperCard";
 
 export default function ResearchDesk({ papers }: { papers: ResearchPaper[] }) {
-  const topics = Array.from(new Set(papers.map((p) => p.connectedTopic))).sort();
+  const topics = Array.from(
+    new Set(papers.map((p) => p.connectedTopic)),
+  ).sort();
   const [active, setActive] = useState<string>("all");
 
   const filtered =
-    active === "all" ? papers : papers.filter((p) => p.connectedTopic === active);
+    active === "all"
+      ? papers
+      : papers.filter((p) => p.connectedTopic === active);
 
   return (
     <div>
@@ -18,7 +22,11 @@ export default function ResearchDesk({ papers }: { papers: ResearchPaper[] }) {
         role="group"
         aria-label="Filter papers by topic"
       >
-        <Chip label="All topics" selected={active === "all"} onClick={() => setActive("all")} />
+        <Chip
+          label="All topics"
+          selected={active === "all"}
+          onClick={() => setActive("all")}
+        />
         {topics.map((t) => (
           <Chip
             key={t}

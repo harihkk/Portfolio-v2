@@ -54,7 +54,9 @@ export default function SystemsExplorer({ systems }: { systems: System[] }) {
               className="group flex h-full flex-col p-6 transition-colors hover:bg-paper-elevated"
             >
               <div className="flex items-center justify-between gap-3">
-                <span className="stamp text-2xl text-signal-dark">{s.index}</span>
+                <span className="stamp text-2xl text-signal-dark">
+                  {s.index}
+                </span>
                 <StatusTag status={s.status} />
               </div>
               <h2 className="mt-4 font-serif text-2xl text-ink group-hover:text-signal-dark">

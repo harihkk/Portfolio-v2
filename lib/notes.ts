@@ -57,11 +57,11 @@ export function getAllNotes(): Note[] {
     .map(readNoteFile)
     .filter((n): n is Note => n !== null)
     .filter((n) => !(isProd && n.frontmatter.draft))
-    .sort((a, b) =>
-      a.frontmatter.date < b.frontmatter.date ? 1 : -1,
-    );
+    .sort((a, b) => (a.frontmatter.date < b.frontmatter.date ? 1 : -1));
 }
 
 export function getNotesForSystem(systemSlug: string): Note[] {
-  return getAllNotes().filter((n) => n.frontmatter.relatedSystem === systemSlug);
+  return getAllNotes().filter(
+    (n) => n.frontmatter.relatedSystem === systemSlug,
+  );
 }

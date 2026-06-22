@@ -25,7 +25,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const paper = getPaper(slug);
-  if (!paper) return pageMetadata({ title: "Paper not found", path: `/research/${slug}` });
+  if (!paper)
+    return pageMetadata({
+      title: "Paper not found",
+      path: `/research/${slug}`,
+    });
   return pageMetadata({
     title: paper.title,
     description: `External paper (arXiv:${paper.arxivId}) connected to ${paper.connectedTopic}. ${paper.relationship}`,

@@ -37,7 +37,9 @@ export default function ExperiencePage() {
                 <p className="mt-1 font-mono text-[0.74rem] tracking-[0.06em] text-ink-soft uppercase">
                   {job.role} · {job.location}
                 </p>
-                <p className="measure mt-5 text-lg text-ink-soft">{job.summary}</p>
+                <p className="measure mt-5 text-lg text-ink-soft">
+                  {job.summary}
+                </p>
 
                 <div className="mt-8 grid gap-px bg-[color:var(--hairline)] sm:grid-cols-2">
                   {job.categories.map((c) => (
@@ -100,7 +102,9 @@ export default function ExperiencePage() {
                 {e.concentration ? `Concentration: ${e.concentration} · ` : ""}
                 {e.institution}, {e.location}
               </p>
-              <p className="font-mono text-[0.72rem] text-ink-muted">{e.date}</p>
+              <p className="font-mono text-[0.72rem] text-ink-muted">
+                {e.date}
+              </p>
             </div>
           ))}
           <p className="mt-4 font-mono text-[0.7rem] text-ink-muted">

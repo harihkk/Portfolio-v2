@@ -60,7 +60,9 @@ export default function ContactForm() {
       }
     } catch {
       setStatus("error");
-      setServerMsg("Network error. Please email directly using the link below.");
+      setServerMsg(
+        "Network error. Please email directly using the link below.",
+      );
     }
   }
 
@@ -98,7 +100,10 @@ export default function ContactForm() {
           aria-describedby={errors.name ? "name-error" : undefined}
         />
         {errors.name ? (
-          <p id="name-error" className="mt-1.5 font-mono text-xs text-signal-dark">
+          <p
+            id="name-error"
+            className="mt-1.5 font-mono text-xs text-signal-dark"
+          >
             {errors.name}
           </p>
         ) : null}
@@ -119,7 +124,10 @@ export default function ContactForm() {
           aria-describedby={errors.email ? "email-error" : undefined}
         />
         {errors.email ? (
-          <p id="email-error" className="mt-1.5 font-mono text-xs text-signal-dark">
+          <p
+            id="email-error"
+            className="mt-1.5 font-mono text-xs text-signal-dark"
+          >
             {errors.email}
           </p>
         ) : null}
@@ -140,7 +148,10 @@ export default function ContactForm() {
           aria-describedby={errors.message ? "message-error" : undefined}
         />
         {errors.message ? (
-          <p id="message-error" className="mt-1.5 font-mono text-xs text-signal-dark">
+          <p
+            id="message-error"
+            className="mt-1.5 font-mono text-xs text-signal-dark"
+          >
             {errors.message}
           </p>
         ) : null}
@@ -164,7 +175,9 @@ export default function ContactForm() {
 
       <p aria-live="polite" className="min-h-[1.25rem]">
         {status === "error" ? (
-          <span className="font-mono text-xs text-signal-dark">{serverMsg}</span>
+          <span className="font-mono text-xs text-signal-dark">
+            {serverMsg}
+          </span>
         ) : null}
       </p>
     </form>

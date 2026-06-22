@@ -69,7 +69,8 @@ const data: ArchiveEvent[] = [
     date: "2026-06-09",
     title: "Helm Browser Agent, evidence-gated browser runtime",
     category: "systems",
-    detail: "192 tests across 16 files, including 40 SSRF-policy tests. Verified at 784af0a.",
+    detail:
+      "192 tests across 16 files, including 40 SSRF-policy tests. Verified at 784af0a.",
     href: "/systems/helm-browser-agent",
     external: false,
     source: "github.com/harihkk/Helm-browser-agent",
@@ -79,7 +80,8 @@ const data: ArchiveEvent[] = [
     date: "2026-06-06",
     title: "ContamCheckr, caveated contamination evidence",
     category: "systems",
-    detail: "30 tests across 7 files; evidence bands, not verdicts. Verified at fbbc85e.",
+    detail:
+      "30 tests across 7 files; evidence bands, not verdicts. Verified at fbbc85e.",
     href: "/systems/contamcheckr",
     external: false,
     source: "github.com/harihkk/contamination-checker",
@@ -161,7 +163,9 @@ const data: ArchiveEvent[] = [
 ];
 
 export const archive: ArchiveEvent[] = data
-  .map((e, i) => validateContent(archiveEventSchema, e, `archive[${i}]:${e.id}`))
+  .map((e, i) =>
+    validateContent(archiveEventSchema, e, `archive[${i}]:${e.id}`),
+  )
   .sort((a, b) => (a.date < b.date ? 1 : -1));
 
 export const archiveCategories = [

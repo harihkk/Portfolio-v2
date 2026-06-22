@@ -35,7 +35,9 @@ function stripHtml(html: string): string {
 }
 
 function tag(block: string, name: string): string {
-  const m = block.match(new RegExp(`<${name}[^>]*>([\\s\\S]*?)</${name}>`, "i"));
+  const m = block.match(
+    new RegExp(`<${name}[^>]*>([\\s\\S]*?)</${name}>`, "i"),
+  );
   return m ? m[1] : "";
 }
 

@@ -20,14 +20,22 @@ const CAT_TONE: Record<string, string> = {
   notes: "text-ink-muted",
 };
 
-export default function ArchiveExplorer({ events }: { events: ArchiveEvent[] }) {
+export default function ArchiveExplorer({
+  events,
+}: {
+  events: ArchiveEvent[];
+}) {
   const [active, setActive] = useState<string>("all");
   const filtered =
     active === "all" ? events : events.filter((e) => e.category === active);
 
   return (
     <div>
-      <div className="flex flex-wrap gap-2" role="group" aria-label="Filter archive">
+      <div
+        className="flex flex-wrap gap-2"
+        role="group"
+        aria-label="Filter archive"
+      >
         {FILTERS.map((f) => (
           <button
             key={f.key}

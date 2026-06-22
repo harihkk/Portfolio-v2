@@ -10,11 +10,15 @@ export default function NotFound() {
         This page isn&rsquo;t in the issue.
       </h1>
       <p className="measure mt-5 text-lg text-ink-soft">
-        The record you were looking for has moved or never ran. Here is the index, every section is verifiable from here.
+        The record you were looking for has moved or never ran. Here is the
+        index, every section is verifiable from here.
       </p>
       <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2">
         <li>
-          <Link href="/" className="link-annotate font-mono text-[0.74rem] tracking-[0.08em] text-signal-dark uppercase">
+          <Link
+            href="/"
+            className="link-annotate font-mono text-[0.74rem] tracking-[0.08em] text-signal-dark uppercase"
+          >
             Front page
           </Link>
         </li>

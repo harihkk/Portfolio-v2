@@ -21,18 +21,28 @@ export default function NotesIndex({ notes }: { notes: Serializable[] }) {
 
   return (
     <div>
-      <div className="flex flex-wrap gap-2" role="group" aria-label="Filter notes by kind">
-        <Chip label="All" selected={active === "all"} onClick={() => setActive("all")} />
+      <div
+        className="flex flex-wrap gap-2"
+        role="group"
+        aria-label="Filter notes by kind"
+      >
+        <Chip
+          label="All"
+          selected={active === "all"}
+          onClick={() => setActive("all")}
+        />
         {kinds.map((k) => (
-          <Chip key={k} label={k} selected={active === k} onClick={() => setActive(k)} />
+          <Chip
+            key={k}
+            label={k}
+            selected={active === k}
+            onClick={() => setActive(k)}
+          />
         ))}
       </div>
       <div className="mt-4">
         {filtered.map((n) => (
-          <NoteCard
-            key={n.slug}
-            note={{ ...n, content: "" } as Note}
-          />
+          <NoteCard key={n.slug} note={{ ...n, content: "" } as Note} />
         ))}
       </div>
     </div>

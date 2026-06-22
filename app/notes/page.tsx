@@ -43,7 +43,10 @@ export default async function NotesPage() {
             {substack.ok && substack.posts.length ? (
               <ul className="flex flex-col">
                 {substack.posts.map((post) => (
-                  <li key={post.link} className="border-b border-[color:var(--hairline)] py-4">
+                  <li
+                    key={post.link}
+                    className="border-b border-[color:var(--hairline)] py-4"
+                  >
                     <a
                       href={post.link}
                       target="_blank"
@@ -57,7 +60,9 @@ export default async function NotesPage() {
                         {post.date}
                       </p>
                       {post.excerpt ? (
-                        <p className="mt-2 text-sm text-ink-soft">{post.excerpt}</p>
+                        <p className="mt-2 text-sm text-ink-soft">
+                          {post.excerpt}
+                        </p>
                       ) : null}
                     </a>
                   </li>
@@ -65,8 +70,8 @@ export default async function NotesPage() {
               </ul>
             ) : (
               <p className="text-ink-muted">
-                The newsletter feed is momentarily unavailable. Read the latest at the
-                source.
+                The newsletter feed is momentarily unavailable. Read the latest
+                at the source.
               </p>
             )}
           </Reveal>

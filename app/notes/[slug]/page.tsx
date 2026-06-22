@@ -24,7 +24,8 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const note = getNote(slug);
-  if (!note) return pageMetadata({ title: "Note not found", path: `/notes/${slug}` });
+  if (!note)
+    return pageMetadata({ title: "Note not found", path: `/notes/${slug}` });
   return pageMetadata({
     title: note.frontmatter.title,
     description: note.frontmatter.summary,
@@ -43,7 +44,9 @@ export default async function NotePage({
   if (!note) notFound();
 
   const fm = note.frontmatter;
-  const relatedSystem = fm.relatedSystem ? getSystem(fm.relatedSystem) : undefined;
+  const relatedSystem = fm.relatedSystem
+    ? getSystem(fm.relatedSystem)
+    : undefined;
   const relatedPaper = fm.relatedPaper ? getPaper(fm.relatedPaper) : undefined;
 
   return (
@@ -86,8 +89,8 @@ export default async function NotePage({
         <p className="measure mt-4 text-lg text-ink-soft">{fm.summary}</p>
         {!fm.authoredByHari ? (
           <p className="mt-4 font-mono text-[0.66rem] text-ink-muted">
-            Derived from verified project documentation, a {fm.kind.toLowerCase()},
-            not a personal essay.
+            Derived from verified project documentation, a{" "}
+            {fm.kind.toLowerCase()}, not a personal essay.
           </p>
         ) : null}
         <hr className="rule mt-6" />

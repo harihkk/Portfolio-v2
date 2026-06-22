@@ -25,7 +25,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const system = getSystem(slug);
-  if (!system) return pageMetadata({ title: "System not found", path: `/systems/${slug}` });
+  if (!system)
+    return pageMetadata({
+      title: "System not found",
+      path: `/systems/${slug}`,
+    });
   return pageMetadata({
     title: system.title,
     description: system.oneLiner,
@@ -95,14 +99,20 @@ export default async function SystemPage({
           </div>
           <hr className="rule-strong mt-3 mb-8" />
           <div className="flex flex-wrap items-center gap-3">
-            <span className="stamp text-4xl text-signal-dark">{system.index}</span>
+            <span className="stamp text-4xl text-signal-dark">
+              {system.index}
+            </span>
             <StatusTag status={system.status} />
           </div>
-          <h1 className="display-lg mt-4 font-serif text-ink">{system.title}</h1>
+          <h1 className="display-lg mt-4 font-serif text-ink">
+            {system.title}
+          </h1>
           <p className="mt-2 font-serif text-2xl text-ink-muted italic">
             {system.subtitle}
           </p>
-          <p className="measure mt-6 text-lg text-ink-soft">{system.oneLiner}</p>
+          <p className="measure mt-6 text-lg text-ink-soft">
+            {system.oneLiner}
+          </p>
 
           <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-2">
             <a
@@ -153,7 +163,10 @@ export default async function SystemPage({
         <Field kicker="How it works">
           <p className="measure text-ink-soft">{system.howItWorks}</p>
           <div className="mt-6">
-            <FlowDiagram steps={system.flow} label={`${system.title} execution flow`} />
+            <FlowDiagram
+              steps={system.flow}
+              label={`${system.title} execution flow`}
+            />
           </div>
         </Field>
 
@@ -162,7 +175,9 @@ export default async function SystemPage({
             {system.architecture.map((c) => (
               <li key={c.component} className="bg-paper p-4">
                 <p className="font-mono text-sm text-ink">{c.component}</p>
-                <p className="font-mono text-[0.66rem] text-signal-dark">{c.path}</p>
+                <p className="font-mono text-[0.66rem] text-signal-dark">
+                  {c.path}
+                </p>
                 <p className="mt-1.5 text-sm text-ink-soft">{c.role}</p>
               </li>
             ))}
@@ -175,7 +190,9 @@ export default async function SystemPage({
               {system.keyComponents.map((c) => (
                 <li key={c.name} className="border-l-2 border-signal pl-4">
                   <p className="font-mono text-sm text-ink">{c.name}</p>
-                  <p className="font-mono text-[0.66rem] text-ink-muted">{c.path}</p>
+                  <p className="font-mono text-[0.66rem] text-ink-muted">
+                    {c.path}
+                  </p>
                   <p className="mt-1 text-sm text-ink-soft">{c.what}</p>
                 </li>
               ))}
@@ -213,7 +230,8 @@ export default async function SystemPage({
                   className="h-auto w-full border border-[color:var(--hairline)]"
                 />
                 <figcaption className="mt-2 font-mono text-[0.66rem] text-ink-muted">
-                  Real terminal capture from the DebugBrief repository (docs/demo.gif).
+                  Real terminal capture from the DebugBrief repository
+                  (docs/demo.gif).
                 </figcaption>
               </figure>
             </Reveal>
@@ -225,7 +243,10 @@ export default async function SystemPage({
         <Field kicker="Evidence">
           <ul className="flex flex-col gap-3">
             {system.evidence.map((e) => (
-              <li key={e.type} className="grid gap-1 sm:grid-cols-[8rem_1fr] sm:gap-4">
+              <li
+                key={e.type}
+                className="grid gap-1 sm:grid-cols-[8rem_1fr] sm:gap-4"
+              >
                 <span className="font-mono text-[0.7rem] tracking-[0.08em] text-signal-dark uppercase">
                   {e.type}
                 </span>
@@ -244,7 +265,9 @@ export default async function SystemPage({
           <ul className="measure flex flex-col gap-2">
             {system.limitations.map((l) => (
               <li key={l} className="flex gap-3 text-ink-soft">
-                <span aria-hidden className="text-warning">-</span>
+                <span aria-hidden className="text-warning">
+                  -
+                </span>
                 <span>{l}</span>
               </li>
             ))}
@@ -290,7 +313,11 @@ export default async function SystemPage({
           <Field kicker="Related research">
             <div>
               {relatedPapers.map((p) => (
-                <PaperCard key={p.slug} paper={p} href={`/research/${p.slug}`} />
+                <PaperCard
+                  key={p.slug}
+                  paper={p}
+                  href={`/research/${p.slug}`}
+                />
               ))}
             </div>
           </Field>

@@ -19,7 +19,10 @@ export default function BuildArtifacts() {
             </figcaption>
             <ul className="flex flex-col gap-2">
               {s.architecture.slice(0, 6).map((c) => (
-                <li key={c.component} className="grid grid-cols-[1fr_auto] items-baseline gap-2">
+                <li
+                  key={c.component}
+                  className="grid grid-cols-[1fr_auto] items-baseline gap-2"
+                >
                   <span className="font-mono text-[0.72rem] text-ink">
                     {c.component}
                   </span>

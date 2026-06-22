@@ -284,7 +284,12 @@ const data: System[] = [
     lastVerifiedDate: "2026-06-09",
     relatedPaperIds: ["webarena", "mind2web", "webshop", "toolllm", "api-bank"],
     relatedNoteSlugs: ["why-browser-agents-need-state-and-recovery"],
-    provenanceIds: ["helm-tests", "helm-cascade", "helm-completion", "helm-ssrf"],
+    provenanceIds: [
+      "helm-tests",
+      "helm-cascade",
+      "helm-completion",
+      "helm-ssrf",
+    ],
   },
 
   // ====================================================== DebugBrief
@@ -370,13 +375,15 @@ const data: System[] = [
       },
       {
         type: "CI matrix",
-        detail: "Linux and macOS across Python 3.9 through 3.14, every release.",
+        detail:
+          "Linux and macOS across Python 3.9 through 3.14, every release.",
         source: ".github/workflows/ci.yml",
         strength: "execution",
       },
       {
         type: "No AI",
-        detail: "No AI, no network requests, no telemetry; reports are built only from recorded evidence.",
+        detail:
+          "No AI, no network requests, no telemetry; reports are built only from recorded evidence.",
         source: "README.md + SECURITY.md",
         strength: "documented",
       },
@@ -507,7 +514,8 @@ const data: System[] = [
       },
       {
         type: "Safe by default",
-        detail: "The local web server refuses to bind to non-loopback addresses.",
+        detail:
+          "The local web server refuses to bind to non-loopback addresses.",
         source: "web.py",
         strength: "deterministic",
       },
